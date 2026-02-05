@@ -1,0 +1,53 @@
+{% load static%}
+<div
+  class="w-full h-full justify-items-center overflow-y-auto pt-2 custom-scrollbar"
+>
+  {% for blog in blogs %}
+  <a href="{% url 'blog:blog_detail' blog.uuid %}" class="block w-[90%] p-1 mt-2 mb-2">
+    <div class="bg-gray-50 p-2 rounded-xl hover:bg-gray-200">
+      <div class="relative w-full h-12 flex gap-x-2 items-center">
+        <img
+          class="size-9 rounded-full"
+          src="{{blog.key_user.avatar.url}}"
+          alt=""
+        />
+        <div class="gap-0">
+          {% load humanize%}
+          <div class="">{{blog.key_user.username}}</div>
+          <div class="text-[10px] opacity-50">
+            {{blog.create_at| naturaltime}}
+          </div>
+        </div>
+      </div>
+      <h3 class="w-full h-15 content-center text-2xl font-bold opacity-70">
+        {{ blog.title }}
+      </h3>
+      <div class="w-full z-0 justify-items-center rounded-[5px] bg-gray-100 outline outline-black/20">
+        {% if blog.image %}
+        <img
+          class=" rounded-[5px]"
+          src="{{ blog.image.url }}"
+          alt=""
+        />
+        {% endif %}
+      </div>
+          <div class="w-[90%] flex content-center gap-2 m-2">
+    <div class="w-auto bg-gray-100 flex rounded-xl pr-2 mt-1 opacity-70">
+        <button type="submit">
+          <img class="size-4" src="{% static 'image/aura.png' %}" alt="" />
+        </button>
+      <span class="content-center">{{blog.like.count}}</span>
+    </div>
+    <div class="w-auto items-center gap-1 bg-gray-100 flex rounded-xl pl-2 pr-2 p-1 mt-1 opacity-70">
+      <img class="size-4" src="{% static 'image/message.png' %}" alt="">
+      <span class="content-center">
+        {{blog.comments.count}}
+      </span>
+    </div>
+  </div>
+    </div>
+  </a>
+
+  <hr class="w-[90%] opacity-30" />
+  {% endfor %}
+</div>

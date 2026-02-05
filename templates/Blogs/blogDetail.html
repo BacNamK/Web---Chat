@@ -1,0 +1,101 @@
+{% load static %}
+{% load humanize %}
+<div class="w-full h-full flex flex-col items-center pt-5 px-2 overflow-y-auto custom-scrollbar">
+    
+    <div class="relative flex h-15 w-[90%] gap-x-3 items-center rounded-[5px]">
+        <img class="size-10 rounded-full object-cover" src="{{blogD.key_user.avatar.url}}" alt="avatar" />
+        <div class="flex flex-col">
+            <div class="font-semibold text-sm">{{blogD.key_user.username}}</div>
+            <div class="text-[10px] opacity-50">{{blogD.create_at|naturaltime}}</div>
+        </div>
+        
+        {% if blogD.key_user.id == user.id %}
+        <div class="group relative ml-auto  ">
+            <img class="size-5 cursor-pointer" src="{% static 'image/option.png' %} " alt="options">
+            <form class="invisible group-hover:visible absolute right-0 top-0 bg-white shadow-md rounded " action="" method="post">
+                {% csrf_token %}
+                <button class="text-red-500 text-xs size-10" type="submit">Xóa</button>
+            </form>
+        </div>
+        {% endif %}
+    </div>
+
+    <div class="w-[90%] text-xl opacity-70 font-bold py-3 text-left">
+        {{ blogD.title }}
+    </div>
+    <div class="w-[90%]">
+      {% if blogD.image %}
+        <img class="rounded-[5px] w-full object-cover" src="{{blogD.image.url}}" alt="blog image" />
+      {% endif %}
+    </div>
+
+    {% if blogD.content %}
+    <div class="font-light w-[90%] mt-2 mb-2 leading-relaxed text-gray-800">{{blogD.content}}</div>
+    {% endif %}
+
+    <div class="w-[90%] flex gap-4 mt-2 mb-2">
+        <div class="flex items-center bg-gray-100 rounded-full px-3 py-1 gap-2">
+            <form action="" method="post">
+                {% csrf_token %}
+                <button type="submit" class="flex items-center">
+                    <img class="size-4" src="{% static 'image/aura.png' %}" alt="like" />
+                </button>
+            </form>
+            <span class="">{{blogD.like.count}}</span>
+        </div>
+        <div class="flex items-center bg-gray-100 rounded-full px-3 py-1 gap-2">
+            <img class="size-4" src="{% static 'image/message.png' %}" alt="comment">
+            <span class="">{{blogD.comments.count}}</span>
+        </div>
+    </div>
+
+    <div class="comment-container relative items-center w-[90%] border border-gray-200 rounded-xl p-2 mb-6">
+        <div class="preview-box  mb-2 hidden">
+            <img class="preview-img size-20 object-cover rounded" src="" alt="preview">
+        </div>
+        <form class="flex items-end gap-2" action="" method="post" enctype="multipart/form-data">
+            {% csrf_token %}
+            <label class="cursor-pointer mb-1"> <img class="size-6" src="{% static 'image/add1.png' %}" alt="upload">
+                <input type="file" name="image" class="image-input hidden" accept="image/*">
+            </label>
+            
+            <textarea 
+                name="content" 
+                class="flex-1 outline-none resize-none text-sm py-1 max-h-40" 
+                rows="1" 
+                placeholder="Viết bình luận..."
+                oninput='this.style.height = "";this.style.height = this.scrollHeight + "px"'
+            ></textarea>
+
+            <button class="bg-green-400 text-white px-4 py-1 rounded-lg text-sm font-medium mb-1" type="submit">Gửi</button>
+        </form>
+    </div>
+</div>
+<script>
+    document.addEventListener('DOMContentLoaded',function(){
+    const tx = document.getElementsByTagName("textarea");
+    for (let i = 0; i < tx.length; i++) {
+        tx[i].setAttribute("style", "height:" + (tx[i].scrollHeight) + "px;overflow-y:hidden;");
+        tx[i].addEventListener("input", OnInput, false);
+    }
+
+    function OnInput() {
+        this.style.height = "auto";
+        this.style.height = (this.scrollHeight) + "px";
+    }},
+
+        document.querySelectorAll('.image-input').forEach(input => {
+        input.addEventListener('change', function() {
+            const container = this.closest('.comment-container') || this.closest('.reply-form');
+            const previewImg = container.querySelector('.preview-img');
+            const previewbox = container.querySelector('.preview-box');
+            const file = this.files[0];
+            
+            if (file) {
+                previewImg.src = URL.createObjectURL(file);
+                previewbox.classList.remove('hidden');
+            }
+        });
+    })
+    )
+</script>

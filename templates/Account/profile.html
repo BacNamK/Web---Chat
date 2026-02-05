@@ -1,0 +1,120 @@
+<!doctype html>
+<html lang="en">
+  {% load static tailwind_tags %}
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Profile</title>
+    {% tailwind_css %} {% load static %}
+  </head>
+  <body>
+    <div class="p-4 w-full h-screen">
+      <div class="relative w-1/3 h-full shadow rounded-[5px]">
+        <div>
+          <img
+            class="rounded-t-[5px]"
+            src="{% static 'img/bg_head.jpg' %}"
+            alt=""
+          />
+        </div>
+        <div class="flex h-20">
+          <div
+            class="absolute top-25 left-5 size-30 rounded-full bg-white shadow flex justify-center"
+          >
+            {% if user.avatar %}
+            <img
+              class="rounded-full"
+              src="{{ user.avatar.url }}"
+              alt=""
+            />
+            {% else %}
+            <img
+              class="w-full h-full"
+              src="{% static 'image/user.png' %}"
+              alt=""
+            />
+            {% endif %}
+          </div>
+          <div class="relative w-full justify-items-end">
+            <div class="w-2/3 h-full content-center flex">
+              <div class="w-full">
+                <div class="text-3xl content-center mt-2">
+                  {{user.username}}
+                </div>
+                {% if user.is_superuser or user.is_staff %}
+                <div class="content-center text-[12px] opacity-60 mt-2">
+                  {% if user.is_superuser %} ADMIN {% else %} MODE {% endif %}
+                </div>
+                {% endif %}
+              </div>
+              <div class="w-[30%] content-center">
+                <label for="toggle-edit" class="cursor-pointer">
+                  <img
+                    class="block size-6"
+                    src="{% static 'image/edit.png' %}"
+                    alt="Edit"
+                  />
+                </label>
+
+                <input type="checkbox" id="toggle-edit" class="peer hidden" />
+
+                <div
+                  class="absolute top-full w-full left-0 z-10 invisible opacity-0 origin-top-left transition-all duration-200 peer-checked:visible peer-checked:opacity-100"
+                >
+                  <form
+                    action="{% url 'account:updateuser' request.user.id %}"
+                    method="post"
+                    enctype="multipart/form-data"
+                    class="p-2 h-50 bg-white shadow-xl rounded-lg w-full outline-1 grid items-center"
+                  >
+                    {% csrf_token %}
+                    <div class="flex h-10 gap-x-5">
+                      <label class="w-[20%] content-center">Chọn ảnh </label>
+                      <input
+                        class="w-[70%] pl-2 rounded-xl bg-gray-200 outline-none content-center"
+                        type="file"
+                        id="file-upload"
+                        name="image"
+                        accept="image/*"
+                      />
+                    </div>
+                    <div class="flex h-10 gap-x-5">
+                      <label class="w-[20%] content-center"> Tên </label>
+                      <input
+                        class="w-[70%] pl-2 rounded-xl bg-gray-200 outline-none"
+                        type="text"
+                        name="username"
+                        id=""
+                        placeholder="{{user.username}}"
+                      />
+                    </div>
+                    <div class="w-full justify-items-center">
+                      <p class="opacity-70 text-red-600">
+                        Lưu ý khi đổi tên : chính tên đó sẽ là tên đăng nhập !
+                      </p>
+                    </div>
+                    <div class="w-full flex justify-center">
+                      <button
+                        class="bg-green-500 w-25 h-10 rounded-[5px]"
+                        type="submit"
+                      >
+                        Lưu
+                      </button>
+                    </div>
+                  </form>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+        <!---->
+        <div class="w-full justify-items-center">
+          <hr class="w-[90%] opacity-20" />
+        </div>
+        <div class="p-5">
+          <div class="">{{user.date_joined | date:"d F Y, H:i"}}</div>
+        </div>
+      </div>
+    </div>
+  </body>
+</html>

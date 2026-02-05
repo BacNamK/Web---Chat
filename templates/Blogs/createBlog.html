@@ -1,0 +1,53 @@
+{% load static %}
+<div class="w-full h-full justify-items-center pt-5 overflow-y-auto">
+  <form
+    action="{% url 'blog:post_blog' %}"
+    method="post"
+    enctype="multipart/form-data"
+    class="w-[90%] h-full"
+  >
+    {% csrf_token %}
+    <div class="flex">
+      <input
+        class="text-3xl h-15 w-full focus-within:bg-gray-200 outline-none border-b pl-4"
+        type="text"
+        name="title"
+        id=""
+        placeholder="Tiêu Đề "
+        maxlength="50"
+      />
+      <div class="p-2">
+        <button type="submit" class="bg-green-300 w-20 h-full rounded-[5px]">
+          Đăng
+        </button>
+      </div>
+    </div>
+    <div class="pt-5">
+      <textarea
+        class="w-full p-2 h-40 bg-gray-100 rounded-[5px] outline-none"
+        maxlength="1000"
+        type="text"
+        name="content"
+        id=""
+        placeholder="Nội Dung"
+      ></textarea>
+    </div>
+    <div class="p-5 flex gap-2">
+      <div
+        class="bg-gray-300 w-10 h-8 content-center text-center rounded-[5px]"
+      >
+        Ảnh
+      </div>
+      <input
+        class="outline-1 p-1 rounded-xl cursor-pointer"
+        type="file"
+        name="image"
+        id="imageInput"
+      />
+    </div>
+    <div class="w-full h-auto flex justify-center bg-gray-100 rounded-xl">
+      <img class="w-auto h-auto" id="preview" src="" alt="" />
+    </div>
+    <div class="h-20"></div>
+  </form>
+</div>

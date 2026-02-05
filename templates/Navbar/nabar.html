@@ -1,0 +1,93 @@
+{% load static %}
+<!--Nabar Destop-->
+<div class="parent relative w-full h-full justify-items-center bg-gray-50 max-lg:hidden">
+    <!--Header-->
+    <div class="w-full h-15 content-center shadow pl-5 font-bold text-2xl">WEB CHAT</div>
+    <!--Điều Hướng-->
+    <div class="w-[90%] mt-2 justify-items-center">
+        {% with request.resolver_match.url_name as current %}
+        <a class="flex w-full gap-3 h-10 p-1 rounded-xl items-center pl-5 {% if current == 'home' %}bg-gray-200{% endif %}" href="{% url 'homeapp:home' %}">
+            <img class="size-7" src="{% static 'image/homeicon.png' %}" alt=""><span>Nhà</span></a>
+        <a class="flex w-full gap-3 h-10 hover:bg-gray-100 p-1 rounded-xl items-center pl-5" href="">
+            <div class="size-7"><img class="size-6" src="{% static 'image/mess.png' %}" alt=""></div>Trò Chuyện</a>
+        <hr class="w-[90%] opacity-20 mt-3">
+        {% if request.resolver_match.url_name == "home" %}
+        <div class="w-[90%] mt-2 justify-items-center opacity-70">
+            <a class="flex w-full h-10 items-center gap-3 p-1 pl-2 hover:bg-gray-100 rounded-xl"
+             href="{% url 'blog:create_blog' %}">
+                <img class="size-6" src="{% static 'image/more.png' %}" alt="">
+                <span>Tạo Bài Viết</span>
+            </a>
+        </div>
+        {% endif %}
+        {% endwith %}
+    </div>
+    <!--User-->
+    <div class=" absolute bottom-0 w-full flex p-1 justify-between items-center">
+        {% if user.is_authenticated %}
+        <div class="w-full h-13 items-center p-2 flex rounded-[5px] shadow">
+            <div class="w-full content-center flex gap-2">
+                <img class="size-9 rounded-full" src="{{user.avatar.url}}" alt="">
+                <div>{{user.username}}</div>
+            </div>
+            <div  class="btn size-10 content-center justify-items-center hover:bg-gray-300 rounded-[5px]">
+                <img class="size-7 hover:rotate-45 duration-500" src="{% static 'image/setting.svg' %}" alt="">
+            </div>
+        </div>
+        {% else %}
+        <div class="w-full h-13 shadow p-2 justify-items-center">
+            <a href="{% url 'account:register' %}" class="flex h-full w-1/2 bg-green-500 rounded-[5px] items-center justify-center gap-2 ">
+                <span class="text-xl font-bold">LOGIN</span>
+                <img class="size-6" src="{% static 'image/enter.png' %}" alt="">
+            </a>
+        </div>
+        {% endif %}
+    </div>
+    <div class="child hidden absolute w-[50%] h-20 content-center bottom-14 z-20 right-1 p-2 bg-gray-100 rounded-t-[5px]">
+
+        <a class="w-full block h-[50%] hover:bg-gray-200 rounded-[5px] pl-2 content-center" href="{% url 'account:profile' %}">Hồ Sơ</a>
+        <form action="{% url 'account:logout' %}" method="post" enctype="multipart/form-data "
+            class="w-full hover:bg-gray-200 rounded-[5px] h-[50%] content-center">
+            {% csrf_token %}
+            <button type="submit" class=" pl-2" >Đăng xuất</button>
+        </form>
+    </div>
+</div>
+<!--Mobile-->
+<div class="relative w-[80%] h-full justify-items-center bg-gray-50 lg:hidden">
+    <!--Header-->
+    <div class="w-full h-15 content-center shadow pl-5 font-bold text-2xl">WEB CHAT</div>
+    <!--Điều Hướng-->
+    <div class="w-[90%] mt-2">
+        <a class="flex gap-3 h-10 hover:bg-gray-200 p-1 rounded-xl items-center pl-5" href=""><img class="size-7" src="{% static 'image/homeicon.png' %}" alt=""><span>Home</span></a>
+        <a class="flex gap-3 h-10 hover:bg-gray-200 p-1 rounded-xl items-center pl-5" href=""><div class="size-7"><img class="size-6" src="{% static 'image/mess.png' %}" alt=""></div><div>Chat</div></a>
+    </div>
+    <!--User-->
+    <div class="absolute bottom-0 w-full flex p-1 justify-between items-center">
+        <div class="w-full h-13 items-center p-2 flex rounded-[5px] shadow">
+            <div class="w-full content-center flex gap-2">
+                <img class="size-9" src="{% static 'image/user.png' %}" alt="">
+                <div>Ngần Bắc Nam</div>
+            </div>
+            <div  class="size-10 content-center justify-items-center hover:bg-gray-300 rounded-[5px]">
+                <img class="size-7" src="{% static 'image/setting.svg' %}" alt="">
+            </div>
+        </div>
+    </div>
+</div>
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const parent = document.querySelector('.parent');
+        const btn = parent.querySelector('.btn');
+        const child = parent.querySelector('.child'); 
+
+        btn.addEventListener('click', (e) => {
+            e.stopPropagation(); 
+            child.classList.toggle("hidden");
+        });
+
+        document.addEventListener('click', () => {
+            child.classList.add("hidden");
+        });
+    });
+</script>
