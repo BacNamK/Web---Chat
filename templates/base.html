@@ -11,6 +11,8 @@
               Tạo Bài Viết
             {% elif request.resolver_match.url_name == "blog_detail" %}
               {{blogD.title}}
+            {% elif request.resolver_match.url_name == "censor_blog" %}
+              Kiểm Duyệt
             {% endif %}
 </title>
   </head>
@@ -27,7 +29,9 @@
         {% elif request.resolver_match.url_name == "create_blog" %}
           {% include "Blogs/createBlog.html" %}
         {% elif request.resolver_match.url_name == "blog_detail" %}
-          {% include "Blogs/blogDetail.html" %} 
+          {% include "Blogs/blogDetail.html" %}
+        {% elif request.resolver_match.url_name == "censor_blog" %}
+          {% include "Blogs/Censor.html" %}  
         {% endif %}
       </div>
       <div class="w-[20%] h-full"></div>

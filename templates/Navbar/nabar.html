@@ -6,20 +6,28 @@
     <!--Điều Hướng-->
     <div class="w-[90%] mt-2 justify-items-center">
         {% with request.resolver_match.url_name as current %}
-        <a class="flex w-full gap-3 h-10 p-1 rounded-xl items-center pl-5 {% if current == 'home' %}bg-gray-200{% endif %}" href="{% url 'homeapp:home' %}">
-            <img class="size-7" src="{% static 'image/homeicon.png' %}" alt=""><span>Nhà</span></a>
-        <a class="flex w-full gap-3 h-10 hover:bg-gray-100 p-1 rounded-xl items-center pl-5" href="">
-            <div class="size-7"><img class="size-6" src="{% static 'image/mess.png' %}" alt=""></div>Trò Chuyện</a>
-        <hr class="w-[90%] opacity-20 mt-3">
-        {% if request.resolver_match.url_name == "home" %}
-        <div class="w-[90%] mt-2 justify-items-center opacity-70">
-            <a class="flex w-full h-10 items-center gap-3 p-1 pl-2 hover:bg-gray-100 rounded-xl"
-             href="{% url 'blog:create_blog' %}">
-                <img class="size-6" src="{% static 'image/more.png' %}" alt="">
-                <span>Tạo Bài Viết</span>
+            <a class="flex w-full gap-3 h-10 p-1 rounded-xl items-center pl-5 {% if current == 'home' %}bg-gray-200{% endif %}" href="{% url 'homeapp:home' %}">
+                <img class="size-5" src="{% static 'image/homeicon.png' %}" alt=""><span>Nhà</span></a>
+            <a class="flex w-full gap-3 h-10 hover:bg-gray-100 p-1 rounded-xl items-center pl-5" href="">
+                <div class="size-5"><img class="size-4" src="{% static 'image/mess.png' %}" alt=""></div>Trò Chuyện</a>
+            <hr class="w-[90%] opacity-20 mt-3">
+            {% if user.is_superuser or user.is_staff %}
+            <a href="{% url 'blog:censor_blog' %}"
+             class="flex w-full hover:bg-gray-100 gap-3 h-10 p-1 rounded-xl items-center pl-5 mt-1 opacity-70 {% if current == 'censor_blog' %}bg-gray-200{% endif %}">
+                <img class="size-5" src="{% static 'image/approve.png' %}" alt="">
+                <div class="w-[80%] flex justify-between">Kiểm Duyệt <span>{{not_verify}}</span></div>
             </a>
-        </div>
-        {% endif %}
+                <hr class="w-[90%] opacity-20 mt-1">
+            {% endif %}
+            {% if current == "home" %}
+            <div class="w-[90%] mt-2 justify-items-center opacity-70">
+                <a class="flex w-full h-10 items-center gap-3 p-1 pl-2 hover:bg-gray-100 rounded-xl"
+                href="{% url 'blog:create_blog' %}">
+                    <img class="size-4" src="{% static 'image/more.png' %}" alt="">
+                    <span>Tạo Bài Viết</span>
+                </a>
+            </div>
+            {% endif %}
         {% endwith %}
     </div>
     <!--User-->
@@ -27,7 +35,11 @@
         {% if user.is_authenticated %}
         <div class="w-full h-13 items-center p-2 flex rounded-[5px] shadow">
             <div class="w-full content-center flex gap-2">
-                <img class="size-9 rounded-full" src="{{user.avatar.url}}" alt="">
+                <div class=" size-9 rounded-full shadow">
+                    {% if user.avatar %}
+                    <img class="size-full rounded-full" src="{{user.avatar.url}}" alt="">
+                    {% endif %}
+                </div>
                 <div>{{user.username}}</div>
             </div>
             <div  class="btn size-10 content-center justify-items-center hover:bg-gray-300 rounded-[5px]">
@@ -45,11 +57,11 @@
     </div>
     <div class="child hidden absolute w-[50%] h-20 content-center bottom-14 z-20 right-1 p-2 bg-gray-100 rounded-t-[5px]">
 
-        <a class="w-full block h-[50%] hover:bg-gray-200 rounded-[5px] pl-2 content-center" href="{% url 'account:profile' %}">Hồ Sơ</a>
+        <a class="w-full block h-[50%] hover:bg-gray-200 rounded-[5px] pl-2 content-center text-center" href="{% url 'account:profile' %}">Hồ Sơ</a>
         <form action="{% url 'account:logout' %}" method="post" enctype="multipart/form-data "
             class="w-full hover:bg-gray-200 rounded-[5px] h-[50%] content-center">
             {% csrf_token %}
-            <button type="submit" class=" pl-2" >Đăng xuất</button>
+            <button type="submit" class=" pl-2 w-full" >Đăng xuất</button>
         </form>
     </div>
 </div>

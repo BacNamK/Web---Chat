@@ -4,6 +4,7 @@ from blog.models import *
 
 # Create your views here.
 def home_Page(request):
-    blogs = blog.objects.order_by("-create_at").select_related("key_user")
-    context ={"blogs":blogs}
+    blogs = blog.objects.filter(verify = True).order_by("-verify_at").select_related("key_user")
+    not_verify = blog.objects.filter(verify = False).count()
+    context ={"blogs":blogs,"not_verify":not_verify}
     return render(request,'base.html',context)

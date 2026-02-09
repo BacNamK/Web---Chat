@@ -34,16 +34,17 @@
     {% endif %}
 
     <div class="w-[90%] flex gap-4 mt-2 mb-2">
-        <div class="flex items-center bg-gray-100 rounded-full px-3 py-1 gap-2">
-            <form action="" method="post">
+        <div class="flex justify-center items-center bg-gray-100 hover:bg-gray-200 rounded-full w-15 py-1 gap-2">
+            <form id="like_blog" action="{% url 'blog:like_blog' blogD.uuid %}" method="post" class="w-full h-full ">
                 {% csrf_token %}
-                <button type="submit" class="flex items-center">
+                <button id="btn-like" type="submit" data-url="{% url 'blog:like_blog' blogD.uuid %}"
+                 class="flex justify-center gap-1 items-center w-full h-full">
                     <img class="size-4" src="{% static 'image/aura.png' %}" alt="like" />
+                        <span id="like-count" class="">{{blogD.like.count}}</span>
                 </button>
             </form>
-            <span class="">{{blogD.like.count}}</span>
         </div>
-        <div class="flex items-center bg-gray-100 rounded-full px-3 py-1 gap-2">
+        <div class="flex justify-center items-center bg-gray-100 rounded-full  w-15 py-1 gap-2">
             <img class="size-4" src="{% static 'image/message.png' %}" alt="comment">
             <span class="">{{blogD.comments.count}}</span>
         </div>
@@ -72,6 +73,46 @@
     </div>
 </div>
 <script>
+    function getCookie(name) {
+        let cookieValue = null;
+        if (document.cookie && document.cookie !== '') {
+            const cookies = document.cookie.split(';');
+            for (let cookie of cookies) {
+                cookie = cookie.trim();
+                if (cookie.startsWith(name + '=')) {
+                    cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                    break;
+                }
+            }
+        }
+        return cookieValue;
+    }
+    const csrftoken = getCookie('csrftoken');
+
+    document.addEventListener('DOMContentLoaded', () => {
+
+        const likeForm = document.getElementById('like_blog');
+        const likeBtn = document.getElementById('btn-like');
+        const likeCount = document.getElementById('like-count');
+
+        likeForm.addEventListener('submit', function (e) {
+            e.preventDefault();
+
+            fetch(likeBtn.dataset.url, {
+                method: 'POST',
+                headers: {
+                    'X-CSRFToken': csrftoken,
+                    'X-Requested-With': 'XMLHttpRequest'
+                }
+            })
+            .then(res => res.json())
+            .then(data => {
+                likeCount.innerText = data.count;
+            });
+        });
+
+    });
+
     document.addEventListener('DOMContentLoaded',function(){
     const tx = document.getElementsByTagName("textarea");
     for (let i = 0; i < tx.length; i++) {
@@ -84,7 +125,7 @@
         this.style.height = (this.scrollHeight) + "px";
     }},
 
-        document.querySelectorAll('.image-input').forEach(input => {
+    document.querySelectorAll('.image-input').forEach(input => {
         input.addEventListener('change', function() {
             const container = this.closest('.comment-container') || this.closest('.reply-form');
             const previewImg = container.querySelector('.preview-img');
