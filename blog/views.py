@@ -7,6 +7,9 @@ from django.utils import timezone
 # Create your views here.
 app_name = 'blog'
 
+
+# Defautl 
+ 
 def get_blog(request):
     return render (request,"Blogs/blogDetail.html")
 def create_blog(request):
@@ -28,6 +31,8 @@ def blog_detail(request,uuid):
      context = {"blogD":blogs}
      return render (request,"base.html",context)
 
+#Action
+
 def like_blog(request, bloguuid):
     if request.method == "POST" and request.headers.get("x-requested-with") == "XMLHttpRequest":
         blog_obj = get_object_or_404(blog, uuid=bloguuid)
@@ -45,6 +50,30 @@ def like_blog(request, bloguuid):
             "count": blog_obj.like.count()
         })
 
+    return JsonResponse({"error": "Invalid request"}, status=400)
+
+def comment_blog(request,bloguuid):
+    if request.method == 'POST' and request.headers.get("x-requested-with") == "XMLHttpRequest":
+        blog_obj = get_object_or_404(blog, uuid = bloguuid)
+        user = request.user
+
+        content = request.POST.get('content')
+        image = request.FILES.get('image')
+        parent_id = request.POST.get('parent_id')
+
+        if content or image:
+            new_comment = comment.objects.create(
+                content = content,
+                image = image,
+                key_user = user,
+                key_blog = blog_obj,
+                parent_id = parent_id if parent_id else None
+            )
+            return JsonResponse({
+                "username": new_comment.key_user.username,
+                "content": new_comment.content,
+                "image_url": new_comment.image.url if new_comment.image else None
+            })
     return JsonResponse({"error": "Invalid request"}, status=400)
 
 # Censor Blog

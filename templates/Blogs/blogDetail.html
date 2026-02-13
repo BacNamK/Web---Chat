@@ -33,14 +33,14 @@
     <div class="font-light w-[90%] mt-2 mb-2 leading-relaxed text-gray-800">{{blogD.content}}</div>
     {% endif %}
 
-    <div class="w-[90%] flex gap-4 mt-2 mb-2">
+    <div class="w-[90%] flex gap-4 mt-4 mb-2">
         <div class="flex justify-center items-center bg-gray-100 hover:bg-gray-200 rounded-full w-15 py-1 gap-2">
-            <form id="like_blog" action="{% url 'blog:like_blog' blogD.uuid %}" method="post" class="w-full h-full ">
+            <form id="form" action="{% url 'blog:like_blog' blogD.uuid %}" method="post" class="w-full h-full ">
                 {% csrf_token %}
                 <button id="btn-like" type="submit" data-url="{% url 'blog:like_blog' blogD.uuid %}"
                  class="flex justify-center gap-1 items-center w-full h-full">
                     <img class="size-4" src="{% static 'image/aura.png' %}" alt="like" />
-                        <span id="like-count" class="">{{blogD.like.count}}</span>
+                        <span id="btn-count" class="">{{blogD.like.count}}</span>
                 </button>
             </form>
         </div>
@@ -50,26 +50,45 @@
         </div>
     </div>
 
-    <div class="comment-container relative items-center w-[90%] border border-gray-200 rounded-xl p-2 mb-6">
+    <div class="comment-container relative items-center w-[90%] border border-gray-200 rounded-xl p-2 mt-2 mb-6">
         <div class="preview-box  mb-2 hidden">
             <img class="preview-img size-20 object-cover rounded" src="" alt="preview">
         </div>
-        <form class="flex items-end gap-2" action="" method="post" enctype="multipart/form-data">
+        <form class="form-comment flex items-end gap-2" action="{% url 'blog:comment_blog' blogD.uuid %}" method="post" enctype="multipart/form-data">
             {% csrf_token %}
             <label class="cursor-pointer mb-1"> <img class="size-6" src="{% static 'image/add1.png' %}" alt="upload">
                 <input type="file" name="image" class="image-input hidden" accept="image/*">
             </label>
             
             <textarea 
+                maxlength="200"
                 name="content" 
-                class="flex-1 outline-none resize-none text-sm py-1 max-h-40" 
+                class="content flex-1 outline-none resize-none text-sm py-1 max-h-40" 
                 rows="1" 
                 placeholder="Viết bình luận..."
                 oninput='this.style.height = "";this.style.height = this.scrollHeight + "px"'
             ></textarea>
 
-            <button class="bg-green-400 text-white px-4 py-1 rounded-lg text-sm font-medium mb-1" type="submit">Gửi</button>
+            <button
+            class="bg-green-400 text-white px-4 py-1 rounded-lg text-sm font-medium mb-1" type="submit">Gửi</button>
         </form>
+    </div>
+    <div id="spaceComment" class="w-[90%] h-auto">
+        {% for i in blogD.comments.all %}
+           <div >
+                <div class="relative flex h-15 w-[90%] gap-x-3 items-center rounded-[5px]">
+                    <img class="size-10 rounded-full object-cover" src="{{i.key_user.avatar.url}}" alt="avatar" />
+                    <div class="flex flex-col">
+                        <div class="font-semibold text-sm">{{i.key_user.username}}</div>
+                        <div class="text-[10px] opacity-50">{{i.date_up|naturaltime}}</div>
+                    </div>
+                </div>
+                <div>{{i.content}}</div>
+                {% if i.image  %}
+                <img src="{{ i.image.url }}" alt="">
+                {% endif %}
+           </div>
+        {% endfor %}
     </div>
 </div>
 <script>
@@ -89,31 +108,9 @@
     }
     const csrftoken = getCookie('csrftoken');
 
-    document.addEventListener('DOMContentLoaded', () => {
-
-        const likeForm = document.getElementById('like_blog');
-        const likeBtn = document.getElementById('btn-like');
-        const likeCount = document.getElementById('like-count');
-
-        likeForm.addEventListener('submit', function (e) {
-            e.preventDefault();
-
-            fetch(likeBtn.dataset.url, {
-                method: 'POST',
-                headers: {
-                    'X-CSRFToken': csrftoken,
-                    'X-Requested-With': 'XMLHttpRequest'
-                }
-            })
-            .then(res => res.json())
-            .then(data => {
-                likeCount.innerText = data.count;
-            });
-        });
-
-    });
-
     document.addEventListener('DOMContentLoaded',function(){
+
+    /* Space input */    
     const tx = document.getElementsByTagName("textarea");
     for (let i = 0; i < tx.length; i++) {
         tx[i].setAttribute("style", "height:" + (tx[i].scrollHeight) + "px;overflow-y:hidden;");
@@ -123,8 +120,9 @@
     function OnInput() {
         this.style.height = "auto";
         this.style.height = (this.scrollHeight) + "px";
-    }},
+    }
 
+    /* Preview comment image */
     document.querySelectorAll('.image-input').forEach(input => {
         input.addEventListener('change', function() {
             const container = this.closest('.comment-container') || this.closest('.reply-form');
@@ -137,6 +135,66 @@
                 previewbox.classList.remove('hidden');
             }
         });
-    })
-    )
+    });
+   
+    /* Button Like  */
+    const form = document.getElementById('form');
+    const btnLike= document.getElementById('btn-like');
+    const btnCount = document.getElementById('btn-count');
+
+    console.log(btnLike.dataset.url)
+
+    form.addEventListener('submit', function (e) {
+        e.preventDefault();
+        fetch(btnLike.dataset.url, {
+            method: 'POST',
+            headers: {
+                'X-CSRFToken': csrftoken,
+                'X-Requested-With': 'XMLHttpRequest'
+            }
+        })
+        .then(res => res.json())
+        .then(data => {
+            btnCount.innerText = data.count;
+        });
+    });
+
+    /* Comment */
+
+    const formComment = document.querySelector('.form-comment');
+    const spaceComment = document.getElementById('spaceComment');
+
+
+    formComment.addEventListener('submit', function(e){
+
+        e.preventDefault();
+
+        const formData = new FormData(formComment);
+
+        fetch(formComment.action,{
+            method:'POST',
+            headers:{
+                'X-CSRFToken': csrftoken,
+                'X-Requested-With': 'XMLHttpRequest'
+            },
+            body: formData
+        })
+        .then(res => res.json())
+        .then(data => {
+
+            spaceComment.insertAdjacentHTML("afterbegin", `
+                <div class="mb-2">
+                    <div class="font-bold">${data.username}</div>
+                    <div>${data.content}</div>
+                    ${data.image_url ? `<img src="${data.image_url}" class="w-40 rounded">` : ""}
+                </div>
+            `);
+
+            formComment.reset();
+
+        });
+
+    });
+
+});
 </script>

@@ -9,6 +9,7 @@ urlpatterns = [
     path('post_blog',views.post_Blog,name="post_blog"),
     path('<uuid:uuid>',views.blog_detail,name="blog_detail"),
     path('like_blog/<uuid:bloguuid>',views.like_blog,name="like_blog"),
+    path('comment_blog/<uuid:bloguuid>',views.comment_blog,name="comment_blog"),
     path('censor_blog',views.censor_blog,name="censor_blog"),
     path("approve_blog/<uuid:bloguuid>",views.approve_blog,name="approve_blog"),
     path("delete_blog<uuid:bloguuid>",views.delete_blog,name="delete_blog")

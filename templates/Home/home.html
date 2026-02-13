@@ -33,23 +33,68 @@
           />
         {% endif %}
       </div>
-          <div class="w-[90%] flex content-center gap-2 m-2">
-    <div class="w-10 justify-center gap-1 bg-gray-100 flex rounded-xl pl-1 pr-2 mt-1 opacity-70">
-        <button type="submit">
-          <img class="size-4" src="{% static 'image/aura.png' %}" alt="" />
-        </button>
-      <span class="content-center">{{blog.like.count}}</span>
-    </div>
-    <div class="w-10 items-center gap-1 bg-gray-100 flex rounded-xl pl-2 pr-2 p-1 mt-1 opacity-70">
-      <img class="size-4" src="{% static 'image/message.png' %}" alt="">
-      <span class="content-center">
-        {{blog.comments.count}}
-      </span>
-    </div>
-  </div>
     </div>
   </a>
+  <!-- Like comment - home -->
+  <div class="w-[90%] flex content-center gap-2 m-2">
+        <form action="{% url 'blog:like_blog' blog.uuid %}" class="form w-10 justify-center gap-1 ml-2 bg-gray-100 flex rounded-xl pl-1 pr-2 mt-1 opacity-70">
+          {% csrf_token %}
+            <button type="submit" data-url="{% url 'blog:like_blog' blog.uuid  %}"
+            class="btn-like">
+              <img class="size-4" src="{% static 'image/aura.png' %}" alt="" />
+            </button>
+          <span class="btn-count content-center">{{blog.like.count}}</span>
+        </form>
+        <div class="w-10 items-center gap-1 bg-gray-100 flex rounded-xl pl-2 pr-2 p-1 mt-1 opacity-70">
+          <img class="size-4" src="{% static 'image/message.png' %}" alt="">
+          <span class="content-center">
+            {{blog.comments.count}}
+          </span>
+        </div>
+  </div>
 
   <hr class="w-[90%] opacity-30" />
   {% endfor %}
 </div>
+<script>
+  function getCookie(name){
+    let cookieValue = "";
+    if(document.cookie && document.cookie !== ''){
+      const cookies = document.cookie.split(';');
+      for(let i=0; i< cookies.length; i++){
+        const cookie = cookies[i].trim()
+        if(cookie.substring(0,name.length + 1) === (name + '=')){
+          cookieValue= decodeURIComponent(cookie.substring(name.length + 1));
+          break;
+        }
+      }
+    }
+    return cookieValue;
+  }
+
+  const csrftoken = getCookie('csrftoken')
+
+
+  document.addEventListener('DOMContentLoaded',()=>{
+    const forms = document.querySelectorAll('.form')
+    forms.forEach(form =>{
+      form.addEventListener('submit',function(e){
+      e.preventDefault()
+
+      const btnLike = form.querySelector('.btn-like')
+      const btnCount = form.querySelector('.btn-count')
+      fetch(btnLike.dataset.url,{
+        method:'POST',
+        headers:{
+          'X-CSRFToken': csrftoken,
+          'X-Requested-With': 'XMLHttpRequest'
+        }
+      })
+      .then(res =>res.json())
+      .then(data =>{
+        btnCount.innerText = data.count
+      })
+    })
+    })
+  })
+</script>
