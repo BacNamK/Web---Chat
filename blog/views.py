@@ -82,7 +82,6 @@ def censor_blog(request):
     blogs = blog.objects.filter(verify = False).select_related("key_user").order_by("-create_at")
     not_verify = blog.objects.filter(verify = False).count()
     context ={"blogs":blogs,"not_verify":not_verify}
-    context = {"blogs":blogs,"not_verify":not_verify}
     return render (request,"base.html",context)
 
 def approve_blog(request,bloguuid):

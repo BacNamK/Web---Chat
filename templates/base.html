@@ -16,7 +16,7 @@
             {% endif %}
 </title>
   </head>
-  <body>
+  <body class="overflow-hidden">
     <div class="w-full h-screen flex">
       <div
         class="xl:w-[20%] max-lg:w-[50%] h-full max-sm:w-full max-sm:absolute max-sm:z-20 max-sm:bg-black/20"
@@ -34,7 +34,7 @@
           {% include "Blogs/Censor.html" %}  
         {% endif %}
       </div>
-      <div class="w-[20%] h-full"></div>
+      <div class="w-[20%] h-full max-md:hidden"></div>
     </div>
   </body>
 </html>

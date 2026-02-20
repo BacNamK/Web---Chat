@@ -1,200 +1,293 @@
 {% load static %}
 {% load humanize %}
-<div class="w-full h-full flex flex-col items-center pt-5 px-2 overflow-y-auto custom-scrollbar">
-    
-    <div class="relative flex h-15 w-[90%] gap-x-3 items-center rounded-[5px]">
-        <img class="size-10 rounded-full object-cover" src="{{blogD.key_user.avatar.url}}" alt="avatar" />
-        <div class="flex flex-col">
-            <div class="font-semibold text-sm">{{blogD.key_user.username}}</div>
-            <div class="text-[10px] opacity-50">{{blogD.create_at|naturaltime}}</div>
+<!-- Main Content -->
+<div class="main relative w-full h-full flex flex-col items-center overflow-y-auto custom-scrollbar pl-2 pt-5 px-2">
+    <a href="{% url 'homeapp:home' %}" class="absolute flex justify-center rounded-full left-3 top-6 ">
+        <img src="{% static 'image/arrow_down.png' %}" class="size-8 opacity-50 rotate-90" alt="">
+    </a>
+    <!-- Thông Tin Chủ Bài Đăng -->
+    <div class="flex w-[90%] h-15 items-center rounded-[5px] gap-x-3">
+        <div class="flex w-auto items-center shadow p-3 rounded-4xl">
+            <img src="{{blogD.key_user.avatar.url}}" class="size-10 rounded-full object-cover" alt="">
+            <div class="pl-2">
+                <div class="font-semibold text-sm">{{blogD.key_user.username}}</div>
+                <div class="text-[10px] opacity-50">{{blogD.create_at|naturaltime}}</div>
         </div>
-        
+        </div>
+        <!-- Chức Năng Xóa bài -->
         {% if blogD.key_user.id == user.id %}
-        <div class="group relative ml-auto  ">
-            <img class="size-5 cursor-pointer" src="{% static 'image/option.png' %} " alt="options">
-            <form class="invisible group-hover:visible absolute right-0 top-0 bg-white shadow-md rounded " action="" method="post">
-                {% csrf_token %}
-                <button class="text-red-500 text-xs size-10" type="submit">Xóa</button>
-            </form>
-        </div>
+            <div class="relative group ml-auto">
+                <img src="{% static 'image/option.png' %}" class="size-5 cursor-pointer" alt="">
+                <form action="" method="post" class="invisible group-hover:visible absolute bg-white shadow-md">
+                    {% csrf_token %}
+                    <button type="submit" class="text-red-500 text-xs size-10" >Xóa</button>
+                </form>
+            </div>
         {% endif %}
-    </div>
-
-    <div class="w-[90%] text-xl opacity-70 font-bold py-3 text-left">
-        {{ blogD.title }}
-    </div>
-    <div class="w-[90%]">
-      {% if blogD.image %}
-        <img class="rounded-[5px] w-full object-cover" src="{{blogD.image.url}}" alt="blog image" />
-      {% endif %}
-    </div>
-
-    {% if blogD.content %}
-    <div class="font-light w-[90%] mt-2 mb-2 leading-relaxed text-gray-800">{{blogD.content}}</div>
-    {% endif %}
-
-    <div class="w-[90%] flex gap-4 mt-4 mb-2">
-        <div class="flex justify-center items-center bg-gray-100 hover:bg-gray-200 rounded-full w-15 py-1 gap-2">
-            <form id="form" action="{% url 'blog:like_blog' blogD.uuid %}" method="post" class="w-full h-full ">
+    </div>   
+        <!-- Tiêu Đề -->
+        <p class="w-[90%] opacity-70 py-3 text-xl font-bold text-left">{{blogD.title}}</p>
+        <!-- Ảnh -->
+        {% if blogD.image %}
+            <div class="w-[90%]"><img src="{{blogD.image.url}}" class="w-full rounded-[5px] object-cover" alt=""></div>
+        {% endif %}
+        <!-- Nội Dung -->
+        {% if blogD.content %}
+            <p class="w-[90%] mt-2 mb-2 leading-relaxed font-light text-gray-800">{{blogD.content}}</p>
+        {% endif %}
+        <!-- Chức Năng like-Comment -->
+         <div class="w-[90%] flex mt-2 mb-4 gap-2">
+            <div class="flex w-15 justify-center items-center rounded-xl shadow">
+                <form action="{% url 'blog:like_blog' blogD.uuid %}" method="post"
+                    class="w-full h-full flex">
+                    {% csrf_token %}
+                    <button type="submit" data-url="{% url 'blog:like_blog' blogD.uuid %}"
+                        class="rounded-full hover:bg-gray-200  size-8 justify-items-center">
+                        <img src="{% static 'image/aura.png' %}" class="size-4" alt="">
+                    </button>
+                    <span class="flex items-center pl-1 opacity-70">{{blogD.like.count}}</span>
+                </form>
+            </div>
+            <div class="flex justify-center items-center rounded-full w-15 py-1 gap-2 shadow">
+                <img class="size-4" src="{% static 'image/message.png' %}" alt="comment">
+                <span class="opacity-70">{{blogD.comments.count}}</spa>
+            </div>
+         </div>
+        <!-- Comment -->
+         <div class="main-commnet relative w-[90%] items-center p-2 mt-2 mb-6 border-2 border-gray-200 rounded-xl">
+            <img class="preview-image size-20 hidden object-cover rounded-[5px]" src="" alt="">
+            <form action="{% url 'blog:comment_blog' blogD.uuid %}" method="POST" class="form-comment flex items-center gap-2">
                 {% csrf_token %}
-                <button id="btn-like" type="submit" data-url="{% url 'blog:like_blog' blogD.uuid %}"
-                 class="flex justify-center gap-1 items-center w-full h-full">
-                    <img class="size-4" src="{% static 'image/aura.png' %}" alt="like" />
-                        <span id="btn-count" class="">{{blogD.like.count}}</span>
-                </button>
+                <label class="cursor-pointer mb-1">
+                    <img src="{% static 'image/add1.png' %}" alt="">
+                    <input type="file" name="image" class="image-input hidden">
+                </label>
+                <textarea maxlength="200" name="content" class="content flex-1 outline-none resize-none text-sm text-black py-1 max-h-40"
+                    rows="1"
+                    placeholder="Viết Bình Luận ... "
+                    oninput='this.style.height ="";this.style.height = this.scrollHeight + "px"'>
+                </textarea>
+                <button class="  bg-green-400 px-4 py-1 rounded-lg text-sm font-medium mb-1" type="submit">Gửi</button>
             </form>
-        </div>
-        <div class="flex justify-center items-center bg-gray-100 rounded-full  w-15 py-1 gap-2">
-            <img class="size-4" src="{% static 'image/message.png' %}" alt="comment">
-            <span class="">{{blogD.comments.count}}</span>
-        </div>
-    </div>
-
-    <div class="comment-container relative items-center w-[90%] border border-gray-200 rounded-xl p-2 mt-2 mb-6">
-        <div class="preview-box  mb-2 hidden">
-            <img class="preview-img size-20 object-cover rounded" src="" alt="preview">
-        </div>
-        <form class="form-comment flex items-end gap-2" action="{% url 'blog:comment_blog' blogD.uuid %}" method="post" enctype="multipart/form-data">
-            {% csrf_token %}
-            <label class="cursor-pointer mb-1"> <img class="size-6" src="{% static 'image/add1.png' %}" alt="upload">
-                <input type="file" name="image" class="image-input hidden" accept="image/*">
-            </label>
-            
-            <textarea 
-                maxlength="200"
-                name="content" 
-                class="content flex-1 outline-none resize-none text-sm py-1 max-h-40" 
-                rows="1" 
-                placeholder="Viết bình luận..."
-                oninput='this.style.height = "";this.style.height = this.scrollHeight + "px"'
-            ></textarea>
-
-            <button
-            class="bg-green-400 text-white px-4 py-1 rounded-lg text-sm font-medium mb-1" type="submit">Gửi</button>
-        </form>
-    </div>
-    <div id="spaceComment" class="w-[90%] h-auto">
-        {% for i in blogD.comments.all %}
-           <div >
-                <div class="relative flex h-15 w-[90%] gap-x-3 items-center rounded-[5px]">
-                    <img class="size-10 rounded-full object-cover" src="{{i.key_user.avatar.url}}" alt="avatar" />
-                    <div class="flex flex-col">
-                        <div class="font-semibold text-sm">{{i.key_user.username}}</div>
-                        <div class="text-[10px] opacity-50">{{i.date_up|naturaltime}}</div>
+         </div>
+        <!-- Views Comment -->
+        <div class="views-comment w-[90%] h-auto">
+            <!-- Parent -->
+            {% for i in blogD.comments.all %}
+                {% if not i.parent %}
+                    <div class="mt-5 parent-comment">
+                        <!-- Thông tin người bình luận -->
+                        <div class="relative flex h-15 w-[90%] gap-x-3 items-center rounded-[5px]">
+                            {% if i.key_user.avatar %}
+                            <img class="size-10 rounded-full object-cover" src="{{i.key_user.avatar.url}}" alt="avatar" />
+                            {% endif %}
+                            <div class="flex flex-col">
+                                <div class="font-semibold text-sm">{{i.key_user.username}}</div>
+                                <div class="text-[10px] opacity-50">{{i.date_up|naturaltime}}</div>
+                            </div>
+                        </div>
+                        <!-- Nội dung bình luận -->
+                        <div class=" border-l  border-black/20 pl-5 ml-4">
+                            <p class="pb-1 pt-1">{{i.content}}</p>
+                            {% if i.image %}
+                                <img src="{{i.image.url}}" class="w-[70%] h-auto rounded-[5px]" alt="">
+                            {% endif %}
+                            <!-- like , reply -->
+                            <div class="flex gap-5 mt-2 ">
+                                <form action="" method="post" class="w-10 justify-items-center">
+                                    <button type="submit" class="flex items-center gap-1 opacity-70">
+                                        <img src="{% static 'image/aura.png' %}" class="size-4" alt="">
+                                        {{i.like.count}}
+                                    </button>
+                                </form>
+                                <button  class="reply-btn opacity-70 cursor-pointer" 
+                                    data-commentId="{{i.id}}" data-username="{{i.key_user.username}}">
+                                    Phản Hồi
+                                </button>
+                            </div>
+                            <!-- Input Reply -->
+                            <div class="reply-form w-full hidden mt-4 rounded-lg p-2 border border-gray-100 bg-gray-50">
+                                <img class="reply-preview-image hidden rounded-[5px]" src="" alt="">
+                                <form action="{% url 'blog:comment_blog' blogD.uuid %}" method="post" enctype="multipart/form-data" class="form-reply flex gap-2 items-stretch w-full">
+                                    {% csrf_token %}
+                                    <input type="hidden" name="parent_id" value="{{i.id}}">
+                                    <label class="cursor-pointer">
+                                        <img src="{% static 'image/add1.png' %}" alt="">
+                                        <input type="file" name="image" class="reply-preview-input hidden">
+                                    </label>
+                                    <textarea name="content" class="textarea w-full flex-1 bg-transparent outline-none text-sm" rows="1"
+                                        oninput="this.style.height = 'auto';this.style.height = this.scrollHeight + 'px'">
+                                    </textarea>
+                                    <button type="button" data-url="{% url 'blog:comment_blog' blogD.uuid %}" class="btn-data">Gửi</button>
+                                </form>
+                            </div>
+                            <!-- Child -->
+                            {% for r in i.replies.all %}
+                                <div class="pl-5 child-comment">
+                                    <!-- Thông tin người phản hồi -->
+                                    <div class="relative w-[90%] h-15 flex items-center gap-x-3 rounded-[5px]">
+                                        <img src="{{r.key_user.avatar.url}}" class="size-10 rounded-full object-cover" alt="">
+                                        <div class="flex flex-col">
+                                            <div class="font-semibold text-sm">{{r.key_user.username}}</di>
+                                                <div class="text-[10px] opacity-50">{{r.date_up|naturaltime}}</div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <!-- Nội Dung -->
+                                    <div class="pl-5">
+                                        <p class="pb-1 pt-1">{{r.content}}</p>
+                                        {% if r.image %}
+                                            <img src="{{r.image.url}}" class="w-[70%] h-auto justify-items-center rounded-[5px]" alt="">
+                                        {% endif %}
+                                        <!---->
+                                        <div class="flex gap-5 mt-2">
+                                            <form action="{% url 'blog:like_blog' blogD.uuid %}" class="w-10 justify-items-center">
+                                                <button type="submit" class="flex items-center gap-1 opacity-70">
+                                                    <img src="{% static 'image/aura.png' %}" class="size-4" alt="">
+                                                    {{r.like.count}}
+                                                </button>
+                                            </form>
+                                            <button class="reply-btn opacity-70 cursor-pointer"
+                                                data-commentId="{{r.id}}" data-username="{{r.key_user.username}}">Phản Hồi
+                                            </button>
+                                        </div>
+                                        <!---->
+                                        <div class="reply-form w-full hidden mt-4 rounded-lg p-2 border border-gray-100 bg-gray-50">
+                                            <img class="reply-preview-image hidden rounded-[5px]" src="" alt="">
+                                            <form action="{% url 'blog:comment_blog' blogD.uuid %}" method="post" enctype="multipart/form-data" class="form-reply flex gap-2 items-stretch w-full">
+                                                {% csrf_token %}
+                                                <input type="hidden" name="parent_id" value="{{i.id}}">
+                                                <label class="cursor-pointer">
+                                                    <img src="{% static 'image/add1.png' %}" alt="">
+                                                    <input type="file" name="image" class="reply-preview-input hidden">
+                                                </label>
+                                                <textarea name="content" class="textarea w-full flex-1 bg-transparent outline-none text-sm" rows="1"
+                                                    oninput="this.style.height = 'auto';this.style.height = this.scrollHeight + 'px'">
+                                                </textarea>
+                                                <button data-url="{% url 'blog:comment_blog' blogD.uuid %}" class="btn-data">Gửi</button>
+                                            </form>
+                                        </div>
+                                    </div>
+                            {% endfor %}
+                        </div>
                     </div>
-                </div>
-                <div>{{i.content}}</div>
-                {% if i.image  %}
-                <img src="{{ i.image.url }}" alt="">
                 {% endif %}
-           </div>
-        {% endfor %}
-    </div>
+            {% endfor %}
+        </div>
 </div>
 <script>
-    function getCookie(name) {
-        let cookieValue = null;
-        if (document.cookie && document.cookie !== '') {
+    function getCookie(name){
+        let cookievalue = null;
+        if (document.cookie && document.cookie !== ''){
             const cookies = document.cookie.split(';');
-            for (let cookie of cookies) {
+            for(let cookie of cookies){
                 cookie = cookie.trim();
-                if (cookie.startsWith(name + '=')) {
-                    cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
-                    break;
+                if(cookie.startsWith(name+'=')){
+                    cookievalue = decodeURIComponent(cookie.substring(name.length +1));
                 }
             }
         }
-        return cookieValue;
+        return cookievalue
     }
-    const csrftoken = getCookie('csrftoken');
 
-    document.addEventListener('DOMContentLoaded',function(){
+    const csrftoken = getCookie('csrftoken')
 
-    /* Space input */    
+    /* Input Text */
+
     const tx = document.getElementsByTagName("textarea");
-    for (let i = 0; i < tx.length; i++) {
-        tx[i].setAttribute("style", "height:" + (tx[i].scrollHeight) + "px;overflow-y:hidden;");
-        tx[i].addEventListener("input", OnInput, false);
+    for (let i = 0; i < tx.length ; i ++){
+        tx[i].setAttribute("style","height:"+(tx[i].scrollHeight)+"px;overflow-y:hidden;");
+        tx[i].addEventListener("input",OnInput,false)
     }
 
-    function OnInput() {
+    function OnInput(){
         this.style.height = "auto";
         this.style.height = (this.scrollHeight) + "px";
     }
 
-    /* Preview comment image */
-    document.querySelectorAll('.image-input').forEach(input => {
-        input.addEventListener('change', function() {
-            const container = this.closest('.comment-container') || this.closest('.reply-form');
-            const previewImg = container.querySelector('.preview-img');
-            const previewbox = container.querySelector('.preview-box');
-            const file = this.files[0];
-            
-            if (file) {
-                previewImg.src = URL.createObjectURL(file);
-                previewbox.classList.remove('hidden');
+    document.addEventListener('DOMContentLoaded',function(){
+        /* Input Image */
+        document.querySelectorAll('.image-input').forEach(input =>{
+            input.addEventListener('change',function(){
+                const previewSrc = document.querySelector('.preview-image');
+                const inputImage = document.querySelector('.image-input');
+                const file = this.files[0];
+
+                if(file){
+                    previewSrc.src = URL.createObjectURL(file);
+                    previewSrc.classList.remove('hidden');
+                }
+            })
+        })
+    })
+    
+    /* Handle input comment */
+    document.querySelectorAll('.parent-comment').forEach( btn =>{
+        const formShow = btn.querySelector('.reply-form')
+        const textarea = btn.querySelector('textarea')
+        const username = btn.querySelector('.reply-btn').dataset.username
+        btn.querySelector('.reply-btn').addEventListener('click',()=>{
+            formShow.classList.remove("hidden");
+
+            textarea.value = `@${username}`
+            textarea.focus()
+
+            textarea.style.height = "auto";
+            textarea.style.height = textarea.scrollHeight + "px";
+        })
+    })
+
+    document.querySelectorAll('.child-comment').forEach( btn =>{
+        const formShow = btn.querySelector('.reply-form')
+        const textarea = btn.querySelector('textarea')
+        const username = btn.querySelector('.reply-btn').dataset.username
+        btn.querySelector('.reply-btn').addEventListener('click',()=>{
+            formShow.classList.remove("hidden");
+
+            textarea.value = `@${username}`
+            textarea.focus()
+
+            textarea.style.height = "auto";
+            textarea.style.height = textarea.scrollHeight + "px";
+        })
+    })
+
+    /**/
+    const views = document.querySelector('.views-comment')
+    document.querySelectorAll('.form-comment').forEach( form =>{
+        const btn = form.querySelector('button')
+        form.addEventListener('submit',function(e){
+            e.preventDefault()
+            const formData = new FormData(this)
+
+            const content = formData.get('content')
+
+            const image = formData.get('image')
+            if(!content.trim() && (image && image.size ===0)){
+                console.log('a')
+                return
             }
-        });
-    });
-   
-    /* Button Like  */
-    const form = document.getElementById('form');
-    const btnLike= document.getElementById('btn-like');
-    const btnCount = document.getElementById('btn-count');
+            try{
+                fetch(form.action,{
+                    method:"POST",
+                    headers:{
+                        'X-CSRFToken': csrftoken,
+                        'X-Requested-With':'XMLHttpRequest'
+                        },
+                    body:formData
+                    })
+                    .then(res=>res.json()).then(data=>{
+                        views.insertAdjacentHTML('afterbegin',`
+                            <div>
+                                <div>${data.username}</div>
+                                <div>${data.content}</div>
+                            </div>
+                        `)
+                    })
+            }
+            catch(err){
 
-    console.log(btnLike.dataset.url)
-
-    form.addEventListener('submit', function (e) {
-        e.preventDefault();
-        fetch(btnLike.dataset.url, {
-            method: 'POST',
-            headers: {
-                'X-CSRFToken': csrftoken,
-                'X-Requested-With': 'XMLHttpRequest'
             }
         })
-        .then(res => res.json())
-        .then(data => {
-            btnCount.innerText = data.count;
-        });
-    });
-
-    /* Comment */
-
-    const formComment = document.querySelector('.form-comment');
-    const spaceComment = document.getElementById('spaceComment');
-
-
-    formComment.addEventListener('submit', function(e){
-
-        e.preventDefault();
-
-        const formData = new FormData(formComment);
-
-        fetch(formComment.action,{
-            method:'POST',
-            headers:{
-                'X-CSRFToken': csrftoken,
-                'X-Requested-With': 'XMLHttpRequest'
-            },
-            body: formData
-        })
-        .then(res => res.json())
-        .then(data => {
-
-            spaceComment.insertAdjacentHTML("afterbegin", `
-                <div class="mb-2">
-                    <div class="font-bold">${data.username}</div>
-                    <div>${data.content}</div>
-                    ${data.image_url ? `<img src="${data.image_url}" class="w-40 rounded">` : ""}
-                </div>
-            `);
-
-            formComment.reset();
-
-        });
-
-    });
-
-});
+    })
 </script>
