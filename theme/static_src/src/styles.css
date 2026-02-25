@@ -30,3 +30,18 @@
     @apply bg-white;
   }
 }
+
+@theme {
+  --animate-icon-like: animate-icon-like 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+  @keyframes animate-icon-like {
+    0% {
+      transform: translateY(0) scale(1);
+    }
+    50% {
+      transform: translateY(-10px) scale(1.5);
+    }
+    100% {
+      transform: translateY(0) scale(1);
+    }
+  }
+}

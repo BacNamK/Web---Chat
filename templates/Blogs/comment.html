@@ -1,0 +1,74 @@
+{% load static %}
+{% load humanize %}
+<div id="comment-{{ comment.id }}" class="comment-level mt-4 w-[90%] ml-2" >
+    <!-- Thông tin người bình luận -->
+    <div class="relative flex h-15 w-full pl-2 bg-gray-50 gap-x-3 items-center rounded-t-[5px]">
+        {% if comment.key_user.avatar %}
+        <img class="size-10 rounded-full object-cover" src="{{comment.key_user.avatar.url}}" alt="avatar" />
+        {% endif %}
+        <div class="flex flex-col">
+            <div class="font-semibold text-sm">{{comment.key_user.username}}</div>
+            <div class="text-[10px] opacity-50">{{comment.date_up|naturaltime}}</div>
+        </div>
+    </div>
+    <!-- Nội dung bình luận -->
+    <div class="ml-7 border-l  border-black/20 w-full">
+        <p class="pb-1 pt-1 pl-5 rounded-b-[5px]pl-2">{{comment.content}}</p>
+        {% if comment.image %}
+            <img src="{{comment.image.url}}" class=" ml-2 w-[60%] h-auto rounded-[5px]" alt="">
+        {% endif %}
+        <!-- like , reply -->
+        <div class="flex gap-5 pl-5 ">
+            <form action="" method="post" class="like-comment w-10 justify-items-center">
+                <button type="submit" class="btn-like flex items-center gap-1 opacity-70 scale-80"
+                data-url="{% url 'blog:like_comment'  comment.id %}">
+                    <img src="
+                        {% if blogD.like.user_id == user.id %}
+                            {% static 'image/arrow-up (2).png' %}
+                        {% else %}
+                            {% static 'image/arrow-up.png' %} 
+                        {% endif %}" class="size-4 change-icon-blog" class="size-4" alt="">
+                    <span class="btn-count">{{comment.like.count}}</span>
+                </button>
+            </form>
+            <button  class="reply-btn opacity-70 cursor-pointer scale-80" 
+                data-commentId="{{comment.id}}" data-username="{{comment.key_user.username}}" data-id="{{ comment.id }}">
+                Phản Hồi
+            </button>
+            <div class="relative option flex opacity-70">
+                <button type="button" class="btn-option"><img class="size-4" src="{% static 'image/option.png' %}" alt=""></button>
+                <div class="showOption hidden ml-5 left-2 z-10 absolute top-0">
+                    <form action="{% url 'blog:delete_comment' comment.id %}"
+                     method="post" enctype="multipart/form-data"
+                     class="form-delete">
+                        {% csrf_token %}
+                        <button data-id="comment-{{ comment.id }}"
+                         data-url="{% url 'blog:delete_comment' comment.id %}" 
+                         type="submit" class="btn-Delete scale-80 hover:text-red-500">Xóa</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+        <!-- Input Reply -->
+        <div class="reply-form w-full hidden mt-4 rounded-lg p-2 border border-gray-100 bg-gray-50">
+            <img class="reply-preview-image hidden rounded-[5px] size-20" src="" alt="">
+            <form action="{% url 'blog:comment_blog' blogD.uuid %}" method="post" enctype="multipart/form-data" class="form-reply flex gap-2 items-stretch w-full">
+                {% csrf_token %}
+                <input type="hidden" name="parent_id" value="{% if level > 2%}{{ comment.parent.id}}{% else %}{{ comment.id }}{% endif %}">
+                <label class="cursor-pointer">
+                    <img src="{% static 'image/add1.png' %}" alt="">
+                    <input type="file" name="image" class="reply-image-input hidden">
+                </label>
+                <textarea name="content" class="textarea w-full flex-1 bg-transparent outline-none text-sm" rows="1"
+                    oninput="this.style.height = 'auto';this.style.height = this.scrollHeight + 'px'"></textarea>
+                <button type="submit" data-url="{% url 'blog:comment_blog' blogD.uuid %}" class="btn-data">Gửi</button>
+            </form>
+        </div>
+        <div class="reply-preview"></div>
+        <div class="replies-container w-full ml-5">
+            {% for reply in comment.replies.all %}
+                {% include "Blogs/comment.html" with comment=reply level=level|add:1 %}
+            {% endfor %}
+        </div>
+    </div>
+</div>

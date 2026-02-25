@@ -10,14 +10,12 @@
                 <img class="size-5" src="{% static 'image/homeicon.png' %}" alt=""><span>Nhà</span></a>
             <a class="flex w-full gap-3 h-10 hover:bg-gray-100 p-1 rounded-xl items-center pl-5" href="">
                 <div class="size-5"><img class="size-4" src="{% static 'image/mess.png' %}" alt=""></div>Trò Chuyện</a>
-            <hr class="w-[90%] opacity-20 mt-3">
             {% if user.is_superuser or user.is_staff %}
             <a href="{% url 'blog:censor_blog' %}"
              class="flex w-full hover:bg-gray-100 gap-3 h-10 p-1 rounded-xl items-center pl-5 mt-1 opacity-70 {% if current == 'censor_blog' %}bg-gray-200{% endif %}">
                 <img class="size-5" src="{% static 'image/approve.png' %}" alt="">
                 <div class="w-[80%] flex justify-between">Kiểm Duyệt <span>{{not_verify}}</span></div>
             </a>
-                <hr class="w-[90%] opacity-20 mt-1">
             {% endif %}
             {% if current == "home" %}
             <div class="w-[90%] mt-2 justify-items-center opacity-70">

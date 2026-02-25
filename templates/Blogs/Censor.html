@@ -7,11 +7,19 @@
   <div class="block w-[90%] p-1 mt-2">
     <div class="bg-gray-50 p-2 rounded-xl">
       <div class="relative w-full h-12 flex gap-x-2 items-center">
+        {% if blog.key_user.avatar %}
         <img
           class="size-9 rounded-full"
           src="{{blog.key_user.avatar.url}}"
           alt=""
         />
+        {% else %}
+        <img
+          class="size-9 rounded-full"
+          src="{% static 'image/user.png' %}"
+          alt=""
+        />
+        {% endif %}
         <div class="gap-0">
           {% load humanize%}
           <div class="">{{blog.key_user.username}}</div>

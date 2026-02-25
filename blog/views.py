@@ -1,4 +1,5 @@
 from django.shortcuts import render,redirect,get_object_or_404
+from django.db.models import Prefetch,Count
 from . import views
 from .models import *
 from django.http import JsonResponse
@@ -27,8 +28,22 @@ def post_Blog(request):
     return render ("Blogs/createBlog.html")
 
 def blog_detail(request,uuid):
-     blogs = blog.objects.select_related("key_user").get(uuid = uuid)
-     context = {"blogD":blogs}
+     
+     replies_queryset = comment.objects.select_related("key_user")
+
+     root_comments_qs = comment.objects.filter(parent__isnull=True) \
+    .select_related("key_user") \
+    .annotate(reply_count=Count("replies"))
+
+     blogs = blog.objects.prefetch_related(
+        Prefetch("comments",queryset=root_comments_qs,
+                  to_attr="root_comments"),
+        Prefetch("comments__replies",queryset=replies_queryset),
+        Prefetch("comments__replies__replies",queryset=replies_queryset)
+     ).get(uuid = uuid)
+     is_liked = blogs.like.filter(id = request.user.id)
+     context = {"blogD":blogs,"is_liked":is_liked}
+
      return render (request,"base.html",context)
 
 #Action
@@ -71,10 +86,42 @@ def comment_blog(request,bloguuid):
             )
             return JsonResponse({
                 "username": new_comment.key_user.username,
+                "avatar_user": new_comment.key_user.avatar.url if  new_comment.key_user.avatar else None,
                 "content": new_comment.content,
                 "image_url": new_comment.image.url if new_comment.image else None
             })
     return JsonResponse({"error": "Invalid request"}, status=400)
+
+def like_comment(request,id):
+    if request.method == 'POST' and request.headers.get("X-Requested-With") == "XMLHttpRequest":
+        print('a')
+        cm = get_object_or_404(comment,id = id)
+        user = request.user
+
+        if cm.like.filter(id =user.id).exists():
+            cm.like.remove(user)
+            liked = False
+        else:
+            cm.like.add(user)
+            liked = True
+        
+        return JsonResponse({
+            "liked":liked,
+            "count": cm.like.count()
+        })
+    return JsonResponse({"error": "Invalid request"}, status=400)
+
+def delete_comment(request, id):
+    if request.method == "POST" and request.headers.get("X-Requested-With") == "XMLHttpRequest":
+        cm = get_object_or_404(comment, id=id)
+
+        if cm.key_user == request.user or cm.key_blog.key_user == request.user:
+            cm.delete()
+            return JsonResponse({'status': 'success'}, status=200)
+
+        return JsonResponse({'status': 'forbidden'}, status=403)
+
+    return JsonResponse({'status': 'error'}, status=400)
 
 # Censor Blog
 
