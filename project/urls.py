@@ -21,7 +21,8 @@ from django.conf.urls.static import static
 urlpatterns = [
     path("",include("home.urls",namespace="home")),
     path("account/",include("account.urls",namespace="account")),
-    path("blog/",include("blog.urls",namespace="blog"))
+    path("blog/",include("blog.urls",namespace="blog")),
+    path("chat/",include("chat.urls",namespace="chat"))
 ]
 
 if settings.DEBUG:

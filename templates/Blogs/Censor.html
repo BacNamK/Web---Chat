@@ -3,6 +3,7 @@
 <div
   class="w-full h-full justify-items-center overflow-y-auto pt-2 custom-scrollbar"
 >
+  {% if blogs %}
   {% for blog in blogs %}
   <div class="block w-[90%] p-1 mt-2">
     <div class="bg-gray-50 p-2 rounded-xl">
@@ -37,7 +38,7 @@
         <div class="absolute inset-0 bg-center bg-cover blur-2xl scale-110"
           style="background-image: url('{{ blog.image.url }}');"></div>
           <img
-            class="relative z-10"
+            class="relative z-10 w-full object-contain max-h-[600px]"
             src="{{ blog.image.url }}"
             alt=""
           />
@@ -49,8 +50,11 @@
     <form action="{% url 'blog:approve_blog' blog.uuid %}">
         <button type="submit" class="h-full w-25 p-1 rounded-[5px] hover:bg-green-500 shadow">Phê Duyệt</button>
     </form>
-    <form action="{% url 'blog:delete_blog' blog.uuid %}"><button class="h-full w-20 p-1 rounded-[5px]  hover:bg-red-500 shadow">Hủy Bỏ</button></form>
+    <form action="{% url 'blog:delete_blog_censor' blog.uuid %}"><button class="h-full w-20 p-1 rounded-[5px]  hover:bg-red-500 shadow">Hủy Bỏ</button></form>
   </div>
   <hr class="w-[90%] opacity-30 mt-2" />
   {% endfor %}
+  {% else %}
+  <span class="opacity-30 block h-full content-center">Không có bài viết nào</span>
+  {% endif %}
 </div>

@@ -1,75 +1,126 @@
-{% load static%}
+{% load static %}
+{% load humanize %}
 <div
-  class="w-full h-full justify-items-center overflow-y-auto pt-2 custom-scrollbar"
+  class="main w-full h-full justify-items-center overflow-y-auto custom-scrollbar"
 >
-  {% for blog in blogs %}
-<div class="w-full justify-items-center shadow">
-    <a href="{% url 'blog:blog_detail' blog.uuid %}" class="block w-[90%] p-1 mt-2">
-      <div class=" p-2 rounded-xl hover:bg-gray-200">
-        <div class="relative w-full h-12 flex gap-x-2 items-center">
-          {% if blog.key_user.avatar %}
-          <img
-            class="size-9 rounded-full"
-            src="{{blog.key_user.avatar.url}}"
-            alt=""
-          />
-          {% else %}
-          <img
-            class="size-9 rounded-full"
-            src="{% static 'image/user.png' %}"
-            alt=""   
-          />
-          {% endif %}
-          <div class="gap-0">
-            {% load humanize%}
-            <div class="">{{blog.key_user.username}}</div>
-            <div class="text-[10px] opacity-50">
-              {{blog.verify_at| naturaltime}}
+  <div class="w-full h-15 justify-items-center content-center">
+    <div class="w-[90%] h-10 bg-gray-50 shadow rounded-full"></div>
+  </div>
+  <div class="w-[90%]">
+    {% for blog in blogs %}
+          <div class="bg-white shadow rounded-lg overflow-hidden mt-2 shrink-0">
+    
+            <div class="p-4">
+              <!-- Author -->
+              <div class="relative flex items-center gap-3">
+                <a href="{% url 'account:profile' blog.key_user.id %}" class="flex gap-2">
+                  {% if blog.key_user.avatar %}
+                    <img class="w-9 h-9 rounded-full object-cover"
+                        src="{{ blog.key_user.avatar.url }}"
+                        alt="{{ blog.key_user.username }}">
+                  {% else %}
+                    <img class="w-9 h-9 rounded-full object-cover"
+                        src="{% static 'image/user.png' %}"
+                        alt="Default avatar">
+                  {% endif %}
+      
+                  <div class="grid gap-0">
+                    <p class="text-sm font-medium">{{ blog.key_user.username }}</p>
+                    <time class="text-[10px] opacity-50">
+                      {{ blog.verify_at|naturaltime }}
+                    </time>
+                  </div>
+                </a>
+                <!---->
+                <div class="absolute form-delete right-10">
+                <img src="{% static 'image/option.png' %}" class="btn-show size-5 cursor-pointer" alt="">
+                <div class="box absolute hidden w-20 shadow p-1 rounded-[5px]">
+                    {% if blog.key_user.id == user.id or user.is_superuser %}
+                    <form action="{% url 'blog:delete_blog_user' blog.uuid %}" method="post" class="hover:bg-gray-100">
+                        {% csrf_token %}
+                        <button type="submit" class="hover:text-red-500 text-xs p-1 w-full flex justify-start rounded-[5px]" ><span>Xóa</span></button>
+                    </form>
+                    {% endif %}
+                    <form action="" method="post" class=" hover:bg-gray-100">
+                        {% csrf_token %}
+                        <button type="submit" class="text-xs p-1 w-full flex justify-start rounded-[5px]" ><span>Báo Cáo</span></button>
+                    </form>
+                </div>
+            </div>
+              </div>
+    
+              <a href="{% url 'blog:blog_detail' blog.uuid %}" class="position cursor-pointer w-[90%]">
+                <!-- Title -->
+                <h2 class="mt-3 text-xl font-bold opacity-80">
+                  {{ blog.title }}
+                </h2>
+      
+                <!-- Image -->
+                {% if blog.image %}
+                <div class="relative mt-2 w-full flex justify-center rounded-md overflow-hidden shrink-0">
+                  <div class="absolute inset-0 bg-center bg-cover blur-2xl scale-110 "
+                      style="background-image: url('{{ blog.image.url }}');"></div>
+                  
+                  <img class="relative z-10 max-h-[500px] w-auto"
+                      src="{{ blog.image.url }}"
+                      alt="{{ blog.title }}">
+                </div>
+                {% endif %}
+              </a>
+    
+            </div>
+    
+            <!-- Actions -->
+            <div class="flex items-center gap-4 px-4 pb-4 text-sm opacity-70">
+    
+              <!-- Like -->
+              <form method="post"
+                    action="{% url 'blog:like_blog' blog.uuid %}"
+                    class="form flex items-center gap-1">
+                {% csrf_token %}
+                <button type="submit" data-url="{% url 'blog:like_blog' blog.uuid  %}"
+                   class="btn-like hover:bg-gray-200 p-1 rounded-full">
+                  <img class="w-4 h-4 change-icon-blog"
+                      src="{% if is_liked %}
+                            {% static 'image/arrow-up-color.png' %}
+                            {% else %}
+                            {% static 'image/arrow-up.png' %}
+                            {% endif %}"
+                      alt="Like">
+                </button>
+                <span class="btn-count">{{ blog.like.count }}</span>
+              </form>
+    
+              <!-- Comment -->
+              <div class="flex items-center gap-1">
+                <img class="w-4 h-4"
+                    src="{% static 'image/message.png' %}"
+                    alt="Comments">
+                <span>{{ blog.comments.count }}</span>
+              </div>
+    
             </div>
           </div>
-        </div>
-        <h3 class="w-full h-15 content-center text-2xl font-bold opacity-70">
-          {{ blog.title }}
-        </h3>
-        <div class="relative w-full flex justify-center rounded-[5px] overflow-hidden">
-          {% if blog.image %}
-          <div class="absolute inset-0 bg-center bg-cover blur-2xl scale-110"
-            style="background-image: url('{{ blog.image.url }}');"></div>
-            <img
-              class="relative z-10"
-              src="{{ blog.image.url }}"
-              alt=""
-            />
-          {% endif %}
-        </div>
-      </div>
-    </a>
-    <!-- Like comment - home -->
-    <div class="w-[90%] flex content-center gap-2 mb-2 mt-1">
-          <form action="{% url 'blog:like_blog' blog.uuid %}" class="form w-auto bg-gray-100 shadow justify-center gap-1 pr-2 ml-2 flex rounded-xl mt-1 opacity-70">
-            {% csrf_token %}
-              <button type="submit" data-url="{% url 'blog:like_blog' blog.uuid  %}"
-              class="btn-like hover:bg-gray-200 rounded-full w-8 justify-items-center">
-                <img class="size-4 change-icon-blog" src="{% if is_liked %}
-                            {% static 'image/arrow-up-color.png' %}
-                        {% else %}
-                            {% static 'image/arrow-up.png' %}
-                        {% endif %}" class="size-4 change-icon-blog" alt="" />
-              </button>
-            <span class="btn-count content-center">{{blog.like.count}}</span>
-          </form>
-          <div class="w-15 shadow items-center gap-1 flex justify-center rounded-xl pl-2 pr-2 p-1 mt-1 opacity-70">
-            <img class="size-4" src="{% static 'image/message.png' %}" class="size-4 change-icon-blog" alt="">
-            <span class="content-center">
-              {{blog.comments.count}}
-            </span>
-          </div>
-    </div>
-    <div class="w-full h-2"></div>
-</div>
-  {% endfor %}
+    {% endfor %}
+  </div>
 </div>
 <script>
+  const position = document.querySelectorAll('.position').forEach(item =>
+  item.addEventListener('click',()=>{
+    const scrolls = document.querySelector('.main')
+    sessionStorage.setItem("home_scroll", scrolls.scrollTop)
+  })
+)
+
+  window.addEventListener('load',()=>{
+    const scrolls = document.querySelector('.main')
+    const savePoint = sessionStorage.getItem('home_scroll')
+
+    if(savePoint){
+      scrolls.scrollTop = parseInt(savePoint)
+    }
+  })
+
   function getCookie(name){
     let cookieValue = "";
     if(document.cookie && document.cookie !== ''){
@@ -87,7 +138,23 @@
 
   const csrftoken = getCookie('csrftoken')
 
+  document.querySelectorAll('.form-delete').forEach(element => {
 
+    const box = element.querySelector('.box')
+    const btn = element.querySelector(".btn-show")
+
+    btn.addEventListener('click',()=>{
+
+    const isVisible = box.classList.contains('hidden')
+
+    if(isVisible){
+      box.classList.remove('hidden')
+    }
+    else{
+      box.classList.add('hidden')
+      }
+    })
+  })
   document.addEventListener('DOMContentLoaded',()=>{
     const forms = document.querySelectorAll('.form')
     forms.forEach(form =>{

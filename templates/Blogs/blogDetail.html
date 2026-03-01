@@ -1,10 +1,17 @@
 {% load static %}
 {% load humanize %}
 <!-- Main Content -->
-<div class="main relative w-full h-full flex flex-col items-center overflow-y-auto custom-scrollbar pl-2 pt-5 px-2">
-    <a href="{% url 'homeapp:home' %}" class="absolute flex justify-center rounded-full left-3 top-6 ">
-        <img src="{% static 'image/arrow_down.png' %}" class="size-8 opacity-50 rotate-90" alt="">
+<div class="main relative w-full h-full flex flex-col items-center overflow-y-auto custom-scrollbar pt-2 px-2 overflow-x-hidden">
+    {% if from == "profile" %}
+    <a href="{% url 'account:profile' blogD.key_user.id %}" class="w-[90%] p-2 flex justify-center items-center rounded-xl bg-gray-50 hover:bg-gray-200">
+        <img src="{% static 'image/right-arrow.png' %}" class="size-4 opacity-50 rotate-180" alt=""><span class="opacity-70">Quay Lại</span>
     </a>
+    {% else %}
+    <a href="{% url 'homeapp:home' %}" class="w-[90%] flex group gap-2 p-2 justify-center items-center rounded-xl bg-gray-50 hover:bg-gray-200">
+        <img src="{% static 'image/right-arrow.png' %}" class="group-hover:-translate-x-5 duration-500 size-4 opacity-50 rotate-180" alt=""><span class="opacity-70">Quay Lại</span>
+    </a>
+    </a>
+    {% endif %}
     <!-- Thông Tin Chủ Bài Đăng -->
     <div class="flex w-[90%] h-15 items-center rounded-[5px] gap-x-3 shrink-0">
         <div class="flex w-auto items-center ">
@@ -18,26 +25,32 @@
                 <div class="text-[10px] opacity-50">{{blogD.create_at|naturaltime}}</div>
         </div>
         </div>
-        <!-- Chức Năng Xóa bài -->
-        {% if blogD.key_user.id == user.id %}
-            <div class="relative group ml-auto">
-                <img src="{% static 'image/option.png' %}" class="size-5 cursor-pointer" alt="">
-                <form action="" method="post" class="invisible group-hover:visible absolute bg-white shadow-md">
-                    {% csrf_token %}
-                    <button type="submit" class="text-red-500 text-xs size-10" >Xóa</button>
-                </form>
+        <!-- Chức Năng -->
+            <div class="absolute right-30">
+                <img src="{% static 'image/option.png' %}" class="btn-show size-5 cursor-pointer" alt="">
+                <div class="box absolute hidden z-50 w-20 shadow p-1 rounded-[5px]">
+                    {% if blogD.key_user.id == user.id or user.is_staff %}
+                    <form action="{% url 'blog:delete_blog_user' blogD.uuid %}" method="post" class="hover:bg-gray-100">
+                        {% csrf_token %}
+                        <button type="submit" class="hover:text-red-500 text-xs p-1 w-full flex justify-start rounded-[5px]" ><span>Xóa</span></button>
+                    </form>
+                    {% endif %}
+                    <form action="" method="post" class=" hover:bg-gray-100">
+                        {% csrf_token %}
+                        <button type="submit" class="text-xs p-1 w-full flex justify-start rounded-[5px]" ><span>Báo Cáo</span></button>
+                    </form>
+                </div>
             </div>
-        {% endif %}
     </div>   
         <!-- Tiêu Đề -->
-        <p class="w-[90%] opacity-70 py-3 text-xl font-bold text-left shrink-0">{{blogD.title}}</p>
+        <p class="w-[90%] opacity-70 py-1 text-xl font-bold text-left shrink-0">{{blogD.title}}</p>
         <!-- Ảnh -->
         <div class="relative w-[90%] flex justify-center rounded-[5px] overflow-hidden shrink-0">
           {% if blogD.image %}
           <div class="absolute inset-0 bg-center bg-cover blur-2xl scale-110"
             style="background-image: url('{{ blogD.image.url }}');"></div>
             <img
-              class="relative z-10"
+              class="relative z-10 w-auto max-h-[500px] object-cover"
               src="{{ blogD.image.url }}"
               alt=""
             />
@@ -92,6 +105,7 @@
         {% for i in blogD.root_comments %}
             {% include "Blogs/comment.html" with comment=i depth=20 level=1 %}
         {% endfor %}
+        <div class="opacity-0">@#$@</div>
 </div>
 <script>
 document.addEventListener('DOMContentLoaded', function(){
@@ -111,6 +125,20 @@ document.addEventListener('DOMContentLoaded', function(){
     }
 
     const csrftoken = getCookie('csrftoken')
+
+    /**/
+    document.querySelector('.btn-show').addEventListener('click',()=>{
+        const box = document.querySelector('.box')
+
+        const isVisible = box.classList.contains('hidden')
+
+        if(isVisible){
+            box.classList.remove('hidden')
+        }
+        else{
+            box.classList.add('hidden')
+        }
+    })
 
     /* Auto resize textarea */
     document.querySelectorAll("textarea").forEach(tx=>{
@@ -220,7 +248,7 @@ document.addEventListener('DOMContentLoaded', function(){
                     form.classList.add('hidden')
                 })
                 formShow.classList.remove("hidden")
-                textarea.value = `@${replyBtn.dataset.username} ` + " "
+                textarea.value = `@${replyBtn.dataset.username} `
                 textarea.focus()
                 textarea.style.height = "auto"
                 textarea.style.height = textarea.scrollHeight + "px"
@@ -312,7 +340,6 @@ document.addEventListener('DOMContentLoaded', function(){
             return res.json()
         })
         .then(data => {
-
                     const newCommentHtml = `
                         <div class="relative flex h-15 w-full pl-2 bg-gray-50 gap-x-3 items-center rounded-t-[5px]">
                             <img class="size-10 rounded-full object-cover" src="${data.avatar_user}" alt="avatar" />
@@ -325,7 +352,6 @@ document.addEventListener('DOMContentLoaded', function(){
                             <p class="pb-1 pt-1 pl-5 rounded-b-[5px]pl-2">${data.content}</p>
                                 <img src="${data.image_url}" class="w-[70%] h-auto rounded-[5px]" alt="">
                     `
-
             repliesContainer.insertAdjacentHTML("beforeend",newCommentHtml)
 
             form.reset()

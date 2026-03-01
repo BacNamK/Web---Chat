@@ -1,0 +1,20 @@
+      <div class="w-[90%] flex content-center gap-2 mb-2 mt-1">
+            <form action="{% url 'blog:like_blog' blog.uuid %}" class="form w-auto bg-gray-100 shadow justify-center gap-1 pr-2 ml-2 flex rounded-xl mt-1 opacity-70">
+              {% csrf_token %}
+                <button type="submit" data-url="{% url 'blog:like_blog' blog.uuid  %}"
+                class="btn-like hover:bg-gray-200 rounded-full w-8 justify-items-center">
+                  <img class="size-4 change-icon-blog" src="{% if is_liked %}
+                              {% static 'image/arrow-up-color.png' %}
+                          {% else %}
+                              {% static 'image/arrow-up.png' %}
+                          {% endif %}" class="size-4 change-icon-blog" alt="" />
+                </button>
+              <span class="btn-count content-center">{{blog.like.count}}</span>
+            </form>
+            <div class="w-15 shadow items-center gap-1 flex justify-center rounded-xl pl-2 pr-2 p-1 mt-1 opacity-70">
+              <img class="size-4" src="{% static 'image/message.png' %}" class="size-4 change-icon-blog" alt="">
+              <span class="content-center">
+                {{blog.comments.count}}
+              </span>
+            </div>
+      </div>

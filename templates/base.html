@@ -5,16 +5,7 @@
     {% tailwind_css %}{% load static %}
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>{% if request.resolver_match.url_name == "home" %}
-              Nhà
-            {% elif request.resolver_match.url_name == "create_blog" %}
-              Tạo Bài Viết
-            {% elif request.resolver_match.url_name == "blog_detail" %}
-              {{blogD.title}}
-            {% elif request.resolver_match.url_name == "censor_blog" %}
-              Kiểm Duyệt
-            {% endif %}
-</title>
+    <title>Enfine</title>
   </head>
   <body class="overflow-hidden">
     <div class="w-full h-screen flex">
@@ -25,13 +16,17 @@
       </div>
       <div class="w-[60%] h-full shadow">
         {% if request.resolver_match.url_name == "home" %}
-          {% include "Home/home.html" %} 
+          {% include "Home/home.html" %}
+        {% elif request.resolver_match.url_name == "chat" %}
+          {% include "Chat/PageChat.html" %} 
         {% elif request.resolver_match.url_name == "create_blog" %}
           {% include "Blogs/createBlog.html" %}
         {% elif request.resolver_match.url_name == "blog_detail" %}
           {% include "Blogs/blogDetail.html" %}
         {% elif request.resolver_match.url_name == "censor_blog" %}
-          {% include "Blogs/Censor.html" %}  
+          {% include "Blogs/Censor.html" %}
+        {% elif request.resolver_match.url_name == "profile" %}
+          {% include "Account/profile.html" %}  
         {% endif %}
       </div>
       <div class="w-[20%] h-full max-md:hidden"></div>

@@ -13,6 +13,7 @@ urlpatterns = [
     path('comment_blog/<uuid:bloguuid>',views.comment_blog,name="comment_blog"),
     path('censor_blog',views.censor_blog,name="censor_blog"),
     path("approve_blog/<uuid:bloguuid>",views.approve_blog,name="approve_blog"),
-    path("delete_blog/<uuid:bloguuid>",views.delete_blog,name="delete_blog"),
+    path("delete_blog_user/<uuid:bloguuid>",views.delete_blog_user,name="delete_blog_user"),
+    path("delete_blog_censor/<uuid:bloguuid>",views.delete_blog_censor,name="delete_blog_censor"),
     path("delete_comment/<int:id>",views.delete_comment,name="delete_comment")
 ]

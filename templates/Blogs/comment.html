@@ -23,7 +23,7 @@
                 <button type="submit" class="btn-like flex items-center gap-1 opacity-70 scale-80"
                 data-url="{% url 'blog:like_comment'  comment.id %}">
                     <img src="
-                        {% if blogD.like.user_id == user.id %}
+                        {% if is_like_comment %}
                             {% static 'image/arrow-up (2).png' %}
                         {% else %}
                             {% static 'image/arrow-up.png' %} 
@@ -42,9 +42,11 @@
                      method="post" enctype="multipart/form-data"
                      class="form-delete">
                         {% csrf_token %}
+                        {% if user.is_superusser or user.id == comment.key_user.id %}
                         <button data-id="comment-{{ comment.id }}"
                          data-url="{% url 'blog:delete_comment' comment.id %}" 
                          type="submit" class="btn-Delete scale-80 hover:text-red-500">Xóa</button>
+                        {% endif %}
                     </form>
                 </div>
             </div>
@@ -55,13 +57,13 @@
             <form action="{% url 'blog:comment_blog' blogD.uuid %}" method="post" enctype="multipart/form-data" class="form-reply flex gap-2 items-stretch w-full">
                 {% csrf_token %}
                 <input type="hidden" name="parent_id" value="{% if level > 2%}{{ comment.parent.id}}{% else %}{{ comment.id }}{% endif %}">
-                <label class="cursor-pointer">
-                    <img src="{% static 'image/add1.png' %}" alt="">
+                <label class="cursor-pointer content-center">
+                    <img class="size-5" src="{% static 'image/add1.png' %}" alt="">
                     <input type="file" name="image" class="reply-image-input hidden">
                 </label>
-                <textarea name="content" class="textarea w-full flex-1 bg-transparent outline-none text-sm" rows="1"
+                <textarea name="content" class="textarea w-full flex-1 p-1 bg-transparent outline-none text-sm" rows="1"
                     oninput="this.style.height = 'auto';this.style.height = this.scrollHeight + 'px'"></textarea>
-                <button type="submit" data-url="{% url 'blog:comment_blog' blogD.uuid %}" class="btn-data">Gửi</button>
+                <button type="submit" data-url="{% url 'blog:comment_blog' blogD.uuid %}" class="btn-data p-1">Gửi</button>
             </form>
         </div>
         <div class="reply-preview"></div>
@@ -72,3 +74,4 @@
         </div>
     </div>
 </div>
+

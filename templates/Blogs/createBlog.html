@@ -7,14 +7,15 @@
     class="w-[90%] h-full"
   >
     {% csrf_token %}
+
     <div class="flex">
       <input
-        class="text-3xl h-15 w-full focus-within:bg-gray-200 outline-none border-b pl-4"
+        class="text-3xl h-15 w-full focus:bg-gray-200 outline-none border-b pl-4"
         type="text"
         name="title"
-        id=""
-        placeholder="Tiêu Đề "
+        placeholder="Tiêu Đề"
         maxlength="50"
+        required
       />
       <div class="p-2">
         <button type="submit" class="bg-green-300 w-20 h-full rounded-[5px]">
@@ -22,32 +23,69 @@
         </button>
       </div>
     </div>
+
+    <!-- Upload -->
+    <div class="mt-2">
+      <label class="cursor-pointer max-w-10 flex justify-center rounded-[5px] bg-gray-100 p-1">
+        <img class="size-5" src="{% static 'image/add1.png' %}" alt="">
+        <input type="file" name="image" class="input-image hidden" accept="image/*">
+      </label>
+    </div>
+
+    <!-- Preview -->
+    <div class="relative w-full h-[55%] mt-1 flex justify-center items-center bg-gray-100 rounded-[5px] overflow-hidden">
+      
+      <!-- Blur background -->
+      <div class="absolute inset-0 bg-center bg-cover blur-2xl scale-110 shell hidden"></div>
+
+      <!-- Image preview -->
+      <img class="relative z-10 max-h-full preview hidden" src="" alt="">
+
+      <span class="text opacity-50 no-image">Không có ảnh</span>
+    </div>
+
     <div class="pt-5">
       <textarea
         class="w-full p-2 h-40 bg-gray-100 rounded-[5px] outline-none"
         maxlength="1000"
-        type="text"
         name="content"
-        id=""
         placeholder="Nội Dung"
+        required
       ></textarea>
     </div>
-    <div class="p-5 flex gap-2">
-      <div
-        class="bg-gray-300 w-10 h-8 content-center text-center rounded-[5px]"
-      >
-        Ảnh
-      </div>
-      <input
-        class="outline-1 p-1 rounded-xl cursor-pointer"
-        type="file"
-        name="image"
-        id="imageInput"
-      />
-    </div>
-    <div class="w-full h-auto flex justify-center bg-gray-100 rounded-xl">
-      <img class="w-auto h-auto" id="preview" src="" alt="" />
-    </div>
-    <div class="h-20"></div>
+
   </form>
 </div>
+
+<script>
+  const input = document.querySelector('.input-image');
+  const preview = document.querySelector('.preview');
+  const shell = document.querySelector('.shell');
+  const text = document.querySelector('.no-image');
+
+  const removeImage = ()=>{
+    let value = null
+    if(value){
+      URL.revokeObjectURL(value)
+    }
+  }
+
+  input.addEventListener('change', (e) => {
+    const file = e.target.files[0];
+
+    if (file) {
+      const imageURL = URL.createObjectURL(file);
+
+      preview.src = imageURL;
+      shell.style.backgroundImage = `url(${imageURL})`;
+
+      preview.classList.remove('hidden');
+      shell.classList.remove('hidden');
+      text.classList.add('hidden');
+    }
+  });
+
+  document.querySelector('form').addEventListener("submit",()=>{
+    removeImage()
+  })
+</script>

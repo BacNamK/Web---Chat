@@ -11,7 +11,7 @@
     <div class="w-full h-screen justify-items-center content-center">
         <div class="outline-1 outline-black/20 w-[35%] h-[80%] rounded-2xl">
             <div class=" h-1/5 justify-items-center content-center"><h1 class="text-4xl font-bold">Đăng Nhập</h1></div>
-                <form action="{% url 'account:login' %}" method="post" enctype="multipart/form-data"
+                <form action="{% url 'account:login' %}" method="post"
                  class="h-3/5 justify-items-center content-center grid gap-y-5">
                     {% csrf_token %}
                     <!---->
@@ -22,7 +22,7 @@
                         <input name="password" class="w-full h-full outline-none" type="password" placeholder="Mật Khẩu">
                     </div>
                     <!---->
-                    <button class="w-1/3 mt-5 outline-1 h-12 rounded-xl cursor-pointer">Submit</button>
+                    <button type="submit" class="w-1/3 mt-5 outline-1 h-12 rounded-xl cursor-pointer">Submit</button>
                     <div class="flex w-3/4 items-center">
                         <hr class="shadow w-full">
                         <span class="pl-2 pr-2">OR</span>

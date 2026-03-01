@@ -28,23 +28,25 @@ def post_Blog(request):
     return render ("Blogs/createBlog.html")
 
 def blog_detail(request,uuid):
-     
-     replies_queryset = comment.objects.select_related("key_user")
+    next_url = request.GET.get("from") 
 
-     root_comments_qs = comment.objects.filter(parent__isnull=True) \
+
+    replies_queryset = comment.objects.select_related("key_user")
+
+    root_comments_qs = comment.objects.filter(parent__isnull=True) \
     .select_related("key_user") \
     .annotate(reply_count=Count("replies"))
 
-     blogs = blog.objects.prefetch_related(
+    blogs = blog.objects.prefetch_related(
         Prefetch("comments",queryset=root_comments_qs,
-                  to_attr="root_comments"),
+                to_attr="root_comments"),
         Prefetch("comments__replies",queryset=replies_queryset),
         Prefetch("comments__replies__replies",queryset=replies_queryset)
-     ).get(uuid = uuid)
-     is_liked = blogs.like.filter(id = request.user.id)
-     context = {"blogD":blogs,"is_liked":is_liked}
+    ).get(uuid = uuid)
+    is_liked = blogs.like.filter(id = request.user.id)
+    context = {"blogD":blogs,"from":next_url,"is_liked":is_liked}
 
-     return render (request,"base.html",context)
+    return render (request,"base.html",context)
 
 #Action
 
@@ -138,7 +140,19 @@ def approve_blog(request,bloguuid):
     blogs.save(update_fields=["verify","verify_at"])
     return redirect("blog:censor_blog")
 
-def delete_blog(request,bloguuid):
+def delete_blog_censor(request,bloguuid):
+
+    next_url = request.GET.get("from")
+
     blogs = blog.objects.get(uuid = bloguuid)
     blogs.delete()
+
+    if next_url :
+        print(next_url)
+        return redirect("account:profile")
     return redirect("blog:censor_blog")
+
+def delete_blog_user(request,bloguuid):
+    blogs = blog.objects.get(uuid = bloguuid)
+    blogs.delete()
+    return redirect("homeapp:home")
