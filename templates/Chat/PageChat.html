@@ -1,4 +1,80 @@
 {% load static %}
 {% load humanize %}
+<div class="relative w-full h-full flex flex-col">
+    <div class="w-full h-[9%] content-center shadow-xs "><h1 class="pl-10 uppercase font-bold"><span class="text-2xl"># </span>{{room_name}}</h1></div>
+    <!---->
+    <div class="flex-1 w-full overflow-y-auto custom-scrollbar">
 
-<div class="w-full h-full">Chat Page</div>
+    <ul id="chat-log" class="pl-3 flex flex-col-reverse"></ul>
+
+    </div>
+    <!---->
+    <div class="w-full p-2  bg-white">
+        <div class="w-full bg-gray-100 rounded-md pr-2">
+            <div class="form-comment flex items-end gap-2 p-1">
+                {% csrf_token %}
+                <label class="cursor-pointer mb-2 shrink-0 w-8 flex justify-center">
+                    <img src="{% static 'image/add1.png' %}" class="w-6 h-6" alt="">
+                    <input type="file" name="image" class="image-input hidden">
+                </label>
+
+                <textarea maxlength="500" name="content" id ="msg"
+                    class="content flex-1 outline-none resize-none text-sm text-black py-2 max-h-32 bg-transparent"
+                    rows="1"
+                    placeholder="Nhắn tin ... "
+                ></textarea>
+
+                <button
+                 id="btn-send"
+                 onclick="sendMessage()"
+                 class=" px-4 py-1.5 mt-1 rounded-lg text-sm font-medium shrink-0">
+                    Gửi
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+<script>
+
+    const roomName = "{{ room_name }}";
+
+    const chatSocket = new WebSocket(
+        "ws://" + window.location.host + "/ws/chat/" + roomName + "/"
+    );
+
+    const socket = new WebSocket("ws://127.0.0.1:8000/ws/chat/community/");
+
+    const chatLog = document.getElementById("chat-log");
+
+    socket.onmessage = function(e) {
+
+        const now = new Date()
+        const time = `${now.getHours()}:${now.getMinutes()}`
+
+
+        const data = JSON.parse(e.data);
+
+        const li = document.createElement("li");
+
+        li.innerHTML =`
+        <div class ="flex w-full h-auto p-2">
+            <image src=${data.avatar} class="size-10 rounded-full" />
+            <div class="w-full">
+                <div class="w-full">${data.username} ${time}</div>
+                <div class="w-full">${data.message}</div>
+            </div>
+        </div>
+        `
+        chatLog.prepend(li);
+    };
+
+    function sendMessage() {
+        const input = document.getElementById("msg");
+        if(!(input.value ==='')){
+        socket.send(JSON.stringify({
+            message: input.value
+        }));
+        input.value = "";
+        }
+    }
+</script>

@@ -2,7 +2,7 @@
 <!--Nabar Destop-->
 <div class="parent relative w-full h-full justify-items-center bg-gray-50 shadow max-lg:hidden">
     <!--Header-->
-    <div class="w-full h-15 content-center shadow pl-5 font-bold text-2xl">WEB CHAT</div>
+    <div class="w-full h-[9%] content-center shadow pl-5 font-bold text-2xl">WEB CHAT</div>
     <!--Điều Hướng-->
     <div class="w-[90%] mt-2 justify-items-center">
         {% with request.resolver_match.url_name as current %}
@@ -10,14 +10,22 @@
              href="{% url 'homeapp:home' %}">
                 <img class="size-5" src="{% static 'image/homeicon.png' %}" alt=""><span>Nhà</span>
             </a>
-            <a class="flex w-full gap-3 h-10 hover:bg-gray-100 p-1 rounded-xl items-center pl-5 duration-1000 {% if current == 'chat_page' %}bg-gray-100 shadow{% endif %}"
-             href="{% url 'chatapp:chat_page' %}">
+            <a class="flex group w-full gap-3 h-10 hover:bg-gray-100 p-1 rounded-xl items-center pl-5 duration-1000 {% if current == 'room' %}bg-gray-100 shadow{% endif %}"
+             href="{% url 'chat:room' 'community' %}">
                 <div class="size-5"><img class="size-4" src="{% static 'image/mess.png' %}" alt=""></div>
                 <div class="w-full flex justify-between items-center">
                     <span>Trò Chuyện</span>
-                    <img class="size-5 {% if current == 'chat_page' %} rotate-180{% endif %} " src="{% static 'image/arrow.png' %}" alt="">
-                </div>
+                    <img class="size-5 group-hover:rotate-90 duration-500 {% if current == 'chat_page' %} rotate-90{% endif %} " src="{% static 'image/arrow.png' %}" alt="">
+                </div>      
             </a>
+            {% if current == 'room' %}
+            <div class="w-full p-1 pl-10 m-2">
+                <a class="flex gap-3" href="">
+                    <img class="size-5 rounded-full shadow" src="{% static 'image/add1.png' %}" alt="">
+                    <span>Tạo nhóm</span>
+                </a>
+            </div>
+            {% endif %}
             <div class="flex w-full h-10 hover:bg-gray-100 gap-3 p-1 rounded-xl items-center pl-5">
                 <img class="size-5" src="{% static 'image/bell.png' %}" alt="">
                 <div class="w-full flex justify-between items-center">
@@ -27,7 +35,7 @@
             </div>
             {% if user.is_superuser or user.is_staff %}
             <a href="{% url 'blog:censor_blog' %}"
-             class="flex w-full hover:bg-gray-200 gap-3 h-10 p-1 rounded-xl items-center pl-5 mt-1 opacity-70 {% if current == 'censor_blog' %}bg-gray-100 shadow{% endif %}">
+             class="flex w-full hover:bg-gray-100 gap-3 h-10 p-1 rounded-xl items-center pl-5 mt-1 opacity-70 {% if current == 'censor_blog' %}bg-gray-100 shadow{% endif %}">
                 <img class="size-5" src="{% static 'image/approve.png' %}" alt="">
                 <div class="w-full flex justify-between">Kiểm Duyệt <span class="pr-1.5">{{not_verify}}</span></div>
             </a>

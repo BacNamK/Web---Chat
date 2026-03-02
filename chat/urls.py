@@ -1,9 +1,8 @@
-from django.urls import path,include
+from django.urls import path
 from . import views
 
-app_name = "chatapp"
+app_name = "chat"
 
 urlpatterns = [
-    path("",views.get_page,name="chat_page")
+    path("<str:room_name>/", views.room, name="room"),
 ]
-
