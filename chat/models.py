@@ -21,7 +21,7 @@ class Message(models.Model):
         on_delete=models.CASCADE,
         related_name="messages"
     )
-
+    repies = models.ForeignKey('self',on_delete=models.SET_NULL, blank=True, null=True ,related_name="replies")
     content = models.TextField()
 
     created_at = models.DateTimeField(auto_now_add=True)

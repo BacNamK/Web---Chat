@@ -1,22 +1,107 @@
 {% load static %}
 {% load humanize %}
-<div class="relative w-full h-full flex flex-col">
+<div class="relative w-full h-full flex flex-col gap-y-0">
     <div class="w-full h-[9%] content-center shadow-xs "><h1 class="pl-10 uppercase font-bold"><span class="text-2xl"># </span>{{room_name}}</h1></div>
     <!---->
     <div class="flex-1 w-full overflow-y-auto custom-scrollbar">
 
-    <ul id="chat-log" class="pl-3 flex flex-col-reverse"></ul>
+        <div id="chat-log" class="w-full">
+            {% for mes in messages %}
+                {% if mes.is_deleted %}
+                    {% else %}
+                        <div id="message-{{mes.id}}" class=" grid pr-3">
+                            {% if mes.show_user or mes.repies %}
+                                <div class="mt-3 {% if mes.repies.user == user %}pt-1 bg-yellow-50/40 border-l-4 border-yellow-200{% else %}{% endif %}">
+                                    {% if mes.repies_id %}
+                                        {% if mes.repies.is_deleted %}
+                                        <div class="flex pl-6 gap-4">
+                                                <img src="{% static 'image/lineRep.svg' %}" class="size-5 mt-2 ml-3 opacity-30" alt="">
+                                                <p>Tin nhắn đã bị xóa</p>
+                                        </div>
+                                        {% else %}
+                                            <div class="pl-6 w-max flex gap-1">
+                                                <img src="{% static 'image/lineRep.svg' %}" class="size-5 mt-2 ml-3 opacity-30" alt="">
+                                                <span class="text-sm flex gap-1 text-black/60">
+                                                    <img src="{{mes.repies.user.avatar.url}}" class="size-5 rounded-full" alt="">
+                                                    <span class="font-bold italic">@{{ mes.repies.user.username }}</span></span>
+                                                <p class="text-sm text-gray-700 ">{{ mes.repies.content }}</p>
+                                            </div>
+                                        {% endif %}
+                                    {% endif %}
+                                    <div id="mess-elememnt" class=" relative flex group mt-0.5 gap-3 items-start pl-5 {% if mes.repies.user %}{% else %}{% endif %} hover:bg-gray-100">
+                                        <img class="size-10 rounded-full mt-1" src="{{ mes.user.avatar.url }}">
+                                        <div>
+                                            <div class="flex gap-2">
+                                                <span class="font-bold">{{ mes.user.username }}</span>
+                                                <span class="text-[10px] block content-center">{{ mes.created_at|date:"H:i" }}</span>
+                                            </div>
+                                            <div class="">{{ mes.content }}</div>
+                                        </div>
+                                        <!---->
+                                        <div id="mess-options"  class="absolute flex gap-x-2 right-5 -top-5 p-1 bg-white rounded-xl shadow invisible group-hover:visible">
+                                            <button id="data-replies" data-user="{{mes.user.username}}" data-message_id="{{mes.id}}"
+                                                class="p-1 hover:bg-gray-100 rounded-full">
+                                                <img src="{% static 'image/reply.png' %}"
+                                                    class="size-5"
+                                                    alt="">
+                                            </button>
+                                            <button id="data-message" data-message="{{mes.content}}" class="p-1 hover:bg-gray-100 rounded-full">
+                                                <img src="{% static 'image/copy.png' %}"
+                                                    class="size-5 scale-90"
+                                                    alt="">
+                                            </button>
+                                            {% if user.is_superuser or user.is_staff or mes.user.id == user.id %}
+                                                <button
+                                                    data-id="{{mes.id}}"
+                                                    class="btn p-1 hover:bg-gray-100 rounded-full">
+                                                    <img src="{% static 'image/delete.png' %}"
+                                                        class="size-5"
+                                                        alt="">
+                                                </button>
+                                            {% endif %}
+                                        </div>
+                                    </div>
+                                </div>
+                            {% else %}
+                            <div id="mess-elememnt" class="relative group flex pl-18 hover:bg-gray-100">
+                                <span>{{ mes.content }}</span>
+                                <div id="mess-options" class="absolute flex gap-3 right-5 -top-5 p-1 shadow bg-white rounded-xl invisible group-hover:visible">
+                                    <button id="data-replies" data-user="{{mes.user.username}}" data-message_id="{{mes.id}}"
+                                        class="p-1 hover:bg-gray-100 rounded-full">
+                                        <img src="{% static 'image/reply.png' %}"
+                                            class="size-5"
+                                            alt="">
+                                    </button>
+                                    <button id="data-message" data-message="{{mes.content}}" class="p-1 hover:bg-gray-100 rounded-full">
+                                        <img src="{% static 'image/copy.png' %}"
+                                            class="size-5 scale-90"
+                                            alt="">
+                                    </button>
+                                    {% if user.is_superuser or user.is_staff or mes.user.id == user.id %}
+                                        <button 
+                                            data-id="{{mes.id}}"
+                                            class="btn p-1 hover:bg-gray-100 rounded-full">
+                                            <img src="{% static 'image/delete.png' %}"
+                                                class="size-5"
+                                                alt="">
+                                        </button>
+                                    {% endif %}
+                                </div>
+                            </div>
+                            {% endif %}
+                        </div>
+                {% endif %}
+            {% endfor %}
+        </div>
 
+        <ul id="chat-log" class="pl-3 flex flex-col-reverse"></ul>
     </div>
     <!---->
-    <div class="w-full p-2  bg-white">
+    <div class="relative w-full p-2 bg-white">
+        <div id="box-replies" class="absolute flex gap-2 w-full p-0.5 -top-5"></div>
         <div class="w-full bg-gray-100 rounded-md pr-2">
-            <div class="form-comment flex items-end gap-2 p-1">
+            <div class="form-comment flex items-end gap-2 p-1 pl-5">
                 {% csrf_token %}
-                <label class="cursor-pointer mb-2 shrink-0 w-8 flex justify-center">
-                    <img src="{% static 'image/add1.png' %}" class="w-6 h-6" alt="">
-                    <input type="file" name="image" class="image-input hidden">
-                </label>
 
                 <textarea maxlength="500" name="content" id ="msg"
                     class="content flex-1 outline-none resize-none text-sm text-black py-2 max-h-32 bg-transparent"
@@ -36,6 +121,23 @@
 </div>
 <script>
 
+    function getCookie(name){
+        let cookievalue = null;
+        if (document.cookie && document.cookie !== ''){
+            const cookies = document.cookie.split(';');
+            for(let cookie of cookies){
+                cookie = cookie.trim();
+                if(cookie.startsWith(name+'=')){
+                    cookievalue = decodeURIComponent(cookie.substring(name.length +1));
+                }
+            }
+        }
+        return cookievalue
+    }
+
+    const csrftoken = getCookie('csrftoken')
+
+    // Websocket
     const roomName = "{{ room_name }}";
 
     const chatSocket = new WebSocket(
@@ -46,35 +148,166 @@
 
     const chatLog = document.getElementById("chat-log");
 
+    //
+    let lastUser = null
+
     socket.onmessage = function(e) {
+        const data = JSON.parse(e.data) 
+        console.log(data)
+        if (data.action === "send_message") {
+            const now = new Date()
+            const time = `${now.getHours()}:${now.getMinutes()}`
+            
+            const li = document.createElement("li");
 
-        const now = new Date()
-        const time = `${now.getHours()}:${now.getMinutes()}`
-
-
-        const data = JSON.parse(e.data);
-
-        const li = document.createElement("li");
-
-        li.innerHTML =`
-        <div class ="flex w-full h-auto p-2">
-            <image src=${data.avatar} class="size-10 rounded-full" />
-            <div class="w-full">
-                <div class="w-full">${data.username} ${time}</div>
-                <div class="w-full">${data.message}</div>
-            </div>
-        </div>
-        `
-        chatLog.prepend(li);
-    };
-
-    function sendMessage() {
-        const input = document.getElementById("msg");
-        if(!(input.value ==='')){
-        socket.send(JSON.stringify({
-            message: input.value
-        }));
-        input.value = "";
+            if(data.user_id != lastUser){
+                li.innerHTML =`
+                        <li data-id=${data.message_id} class="relative flex group gap-3 items-start mt-4 pl-5 hover:bg-gray-100">
+                            <img class="size-10 rounded-full mt-1" src="${data.avatar }">
+                            <div>
+                                <div class="flex gap-2 text-black/70">
+                                    <span class="font-bold">${data.username }</span>
+                                    <span class="text-[10px] block content-center">${time}</span>
+                                </div>
+                                <div class="">${ data.message }</div>
+                            </div>
+                            <!---->
+                            <div id="mess-options" class="absolute flex gap-x-2 right-5 -top-5 p-1 bg-white rounded-xl shadow invisible group-hover:visible">
+                                <button id="data-replies" data-user="${data.username}" data-message_id="${data.message_id}" 
+                                    class="p-1 hover:bg-gray-100 rounded-full">
+                                    <img src="{% static 'image/reply.png' %}"
+                                        class="size-5"
+                                        alt="">
+                                </button>
+                                <button id="data-message" data-message="${data.message}" class="p-1 hover:bg-gray-100 rounded-full">
+                                    <img src="{% static 'image/copy.png' %}"
+                                        class="size-5 scale-90"
+                                        alt="">
+                                </button>
+                                {% if user.is_superuser or user.is_staff or mes.user.id == user.id %}
+                                    <button
+                                        class="btn p-1 hover:bg-gray-100 rounded-full">
+                                        <img src="{% static 'image/delete.png' %}"
+                                            class="size-5"
+                                            alt="">
+                                    </button>
+                                {% endif %}
+                            </div>
+                        </li>   
+            `
+            }
+            else{
+                li.innerHTML=`
+            <li data-id=${data.message_id} class="relative group flex pl-16 hover:bg-gray-100">
+                <span>${ data.message}</span>
+                <div id="mess-options" class="absolute flex gap-3 right-5 -top-5 p-1 shadow bg-white rounded-xl invisible group-hover:visible">
+                    <button id="data-replies" data-user="${data.username}" data-message_id="${data.message_id}" 
+                        class="p-1 hover:bg-gray-100 rounded-full">
+                        <img src="{% static 'image/reply.png' %}"
+                                class="size-5"
+                                alt="">
+                    </button>
+                    <button id="data-message" data-message="${data.message}" class="p-1 hover:bg-gray-100 rounded-full">
+                        <img src="{% static 'image/copy.png' %}"
+                            class="size-5 scale-90"
+                            alt="">
+                    </button>
+                        {% if user.is_superuser or user.is_staff or mes.user.id == user.id %}
+                            <button 
+                                class="btn  p-1 hover:bg-gray-100 rounded-full">
+                                    <img src="{% static 'image/delete.png' %}"
+                                        class="size-5"
+                                        alt="">
+                            </button>
+                    {% endif %}
+                </div>
+            </li>`
+            }
+            lastUser = data.user_id
+            chatLog.append(li);
+        }
+        if (data.action === "delete_message") {
+            const el = document.getElementById(`message-${data.message_id}`)
+            if (el) el.remove()
         }
     }
+
+    let repliesid = null
+    function sendMessage() {
+        const input = document.getElementById("msg");
+
+        if(!(input.value ==='')){
+            socket.send(JSON.stringify({
+                action:"send_message",
+                message: input.value,
+                replies:repliesid,
+
+            }));
+            input.value = "";
+        }
+    }
+
+    // Xử lý xóa message
+    const actionDelete =(id)=>{
+        socket.send(JSON.stringify({
+                action:"delete_message",
+                message_id:id
+            }))
+    }
+
+    document.querySelectorAll(".btn").forEach(item=>{
+        item.addEventListener('click',()=>{
+
+            const id = item.dataset.id;
+            document.getElementById(`message-${id}`).remove();
+            actionDelete(id)
+        })
+    })
+
+    document.querySelector("#chat-log").addEventListener("click", function(e) {
+        const li = e.target.closest("li");
+
+        if (!li || !this.contains(li)) return;
+
+        if (e.target.closest(".btn")) {
+            const messageId = li.dataset.id;
+            li.remove();
+            actionDelete(messageId)
+        }
+    }),
+
+    // Chức năng copy
+ 
+   document.querySelectorAll("#data-message").forEach(item=>{
+        item.addEventListener("click",()=>{
+            const data = item.dataset.message;
+            navigator.clipboard.writeText(data)
+        })
+    })
+
+    // Trả lời tin nhắn
+
+    document.addEventListener("click", function(e) {
+        if (e.target.closest("#data-replies")) {
+            const item = e.target.closest("#data-replies");
+            const box = document.querySelector("#box-replies");
+            const user = item.dataset.user;
+            const message_id = item.dataset.message_id;
+            repliesid = message_id;
+            box.innerHTML = `
+                <div class="bg-gray-100 pl-1 pr-1">
+                    Đang phản hồi <span class="font-bold">@${user}</span>
+                </div>
+                <button id="cancel" class="text-red-500 font-bold">Hủy</button>
+            `;
+            document.querySelector("#cancel").addEventListener("click", cancel);
+        }
+    });
+
+    const cancel = () => {
+        const box = document.querySelector("#box-replies");
+        box.innerHTML = ``;
+        repliesid = null;
+    };
+
 </script>

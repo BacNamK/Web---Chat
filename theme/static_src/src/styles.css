@@ -1,3 +1,5 @@
+@import url("https://fonts.googleapis.com/css2?family=Nunito:ital,wght@0,200..1000;1,200..1000&family=Orbitron:wght@400..900&family=TASA+Orbiter:wght@400..800&display=swap");
+@import url("https://fonts.googleapis.com/css2?family=Montserrat:ital,wght@0,100..900;1,100..900&family=Nunito:ital,wght@0,200..1000;1,200..1000&family=Orbitron:wght@400..900&family=TASA+Orbiter:wght@400..800&display=swap");
 @import "tailwindcss";
 
 /**
@@ -32,6 +34,8 @@
 }
 
 @theme {
+  --font-montserrat: "Montserrat", sans-serif;
+  --font-nunito: "Nunito", sans-serif;
   --animate-icon-like: animate-icon-like 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
   @keyframes animate-icon-like {
     0% {

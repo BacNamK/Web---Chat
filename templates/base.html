@@ -7,14 +7,14 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Enfine</title>
   </head>
-  <body class="overflow-hidden">
+  <body class="overflow-hidden font-nunito">
     <div class="w-full h-screen flex">
       <div
-        class="xl:w-[20%] max-lg:w-[50%] h-full max-sm:w-full max-sm:absolute max-sm:z-20 max-sm:bg-black/20"
+        class="xl:w-[20%] max-lg:w-15 h-full max-sm:w-full max-sm:absolute max-sm:z-20 max-sm:bg-black/20"
       >
         {% include "Navbar/nabar.html"%}
       </div>
-      <div class="w-[60%] h-full shadow">
+      <div class="w-[60%]  max-xl:w-full h-full shadow">
         {% if request.resolver_match.url_name == "home" %}
           {% include "Home/home.html" %}
         {% elif request.resolver_match.url_name == "room" %}
@@ -29,7 +29,7 @@
           {% include "Account/profile.html" %}  
         {% endif %}
       </div>
-      <div class="w-[20%] h-full max-md:hidden"></div>
+      <div class="w-[20%] h-full max-xl:hidden"></div>
     </div>
   </body>
 </html>

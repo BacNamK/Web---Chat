@@ -80,7 +80,7 @@
                 {% csrf_token %}
                 <button type="submit" data-url="{% url 'blog:like_blog' blog.uuid  %}"
                    class="btn-like hover:bg-gray-200 p-1 rounded-full">
-                  <img class="w-4 h-4 change-icon-blog"
+                  <img class="w-4 h-4 change-icon-blog scale-90"
                       src="{% if is_liked %}
                             {% static 'image/arrow-up-color.png' %}
                             {% else %}
