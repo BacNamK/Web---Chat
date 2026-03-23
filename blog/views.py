@@ -1,9 +1,12 @@
-from django.shortcuts import render,redirect,get_object_or_404
-from django.db.models import Prefetch,Count
-from . import views
+from django.dispatch import receiver
+
 from .models import *
-from django.http import JsonResponse
 from django.utils import timezone
+from django.http import JsonResponse
+from django.db.models import Prefetch,Count
+from django.shortcuts import render,redirect,get_object_or_404
+from notification.service import push_notification
+from home.models import Report
 
 # Create your views here.
 app_name = 'blog'
@@ -22,7 +25,8 @@ def post_Blog(request):
             key_user = request.user,
             title = request.POST.get("title"),
             content = request.POST.get("content"),
-            image = request.FILES.get("image")
+            image = request.FILES.get("image"),
+            video = request.FILES.get("video")
             )
             return redirect('homeapp:home')
     return render ("Blogs/createBlog.html")
@@ -61,6 +65,16 @@ def like_blog(request, bloguuid):
         else:
             blog_obj.like.add(user)
             liked = True
+        
+        if liked and blog_obj.key_user != user:
+            push_notification(
+                sender=user,
+                receiver=blog_obj.key_user,
+                type="like",
+                content=f"{user.username} đã thích bài viết của bạn",
+                url=f"/blog/{bloguuid}",
+                obj=blog_obj
+            )
 
         return JsonResponse({
             "liked": liked,
@@ -86,6 +100,32 @@ def comment_blog(request,bloguuid):
                 key_blog = blog_obj,
                 parent_id = parent_id if parent_id else None
             )
+
+            # Push notification
+            if parent_id:
+                # phản hồi
+                parent_comment = comment.objects.get(id=parent_id)
+                if parent_comment.key_user != user:
+                    push_notification(
+                        sender=user,
+                        receiver=parent_comment.key_user,
+                        type="reply",
+                        content=f"{user.username} đã phản hồi bình luận của bạn",
+                        url=f"/blog/{bloguuid}?from=reply-{new_comment.id}",
+                        obj=new_comment
+                    )
+            else:
+                # bình luận
+                if blog_obj.key_user != user:
+                    push_notification(
+                        sender=user,
+                        receiver=blog_obj.key_user,
+                        type="comment",
+                        content=f"{user.username} đã bình luận bài viết của bạn",
+                        url=f"/blog/{bloguuid}?from=comment-{new_comment.id}",
+                        obj=new_comment
+                    )
+
             return JsonResponse({
                 "username": new_comment.key_user.username,
                 "avatar_user": new_comment.key_user.avatar.url if  new_comment.key_user.avatar else None,
@@ -106,6 +146,16 @@ def like_comment(request,id):
         else:
             cm.like.add(user)
             liked = True
+
+        if liked and cm.key_user != user:
+            push_notification(
+                sender=user,
+                receiver=cm.key_user,
+                type="like",
+                content=f"{user.username} đã thích bình luận của bạn",
+                url=f"/blog/{cm.key_blog.uuid}",
+                obj=cm
+            )
         
         return JsonResponse({
             "liked":liked,
@@ -125,6 +175,24 @@ def delete_comment(request, id):
 
     return JsonResponse({'status': 'error'}, status=400)
 
+def report_comment(request, id):
+    if request.method == "POST":
+        cm = get_object_or_404(comment, id=id)
+        reason = (request.POST.get("reason") or "").strip()
+        if not reason:
+            reason = "Không có lý do"
+
+        Report.objects.create(
+            reporter=request.user,
+            target_user=cm.key_user,
+            target_id=str(cm.id),
+            reason=reason,
+        )
+
+        return redirect("blog:blog_detail", uuid=cm.key_blog.uuid)
+
+    return redirect("blog:blog_detail", uuid=cm.key_blog.uuid)
+
 # Censor Blog
 
 def censor_blog(request):
@@ -138,6 +206,15 @@ def approve_blog(request,bloguuid):
     blogs.verify = True
     blogs.verify_at = timezone.now()
     blogs.save(update_fields=["verify","verify_at"])
+
+    push_notification(
+            sender=request.user,
+            receiver=blogs.key_user,
+            type="system",
+            content="Bài viết của bạn đã được duyệt",
+        url=f"/blog/{bloguuid}",
+            obj=blogs
+        )
     return redirect("blog:censor_blog")
 
 def delete_blog_censor(request,bloguuid):
@@ -156,3 +233,9 @@ def delete_blog_user(request,bloguuid):
     blogs = blog.objects.get(uuid = bloguuid)
     blogs.delete()
     return redirect("homeapp:home")
+
+def start_blog(request,uuid):
+    blog_taget = get_object_or_404(blog,uuid = uuid)
+    blog_taget.star = True
+    blog_taget.save(update_fields=["star"])
+    return render(request,"base.html")

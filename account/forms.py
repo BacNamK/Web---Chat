@@ -14,15 +14,15 @@ class UserForm(forms.ModelForm):
         }
         widgets = {
             "username": forms.TextInput(attrs={
-                "placehoder":"Tên Đăng Nhập",
+                "placeholder":"Tên đăng nhập",
                 "class":"w-full h-12 px-3 rounded-xl bg-gray-100 outline-none"
             }),
             "password": forms.PasswordInput(attrs={
-                "placehoder":"Tên Đăng Nhập",
+                "placeholder":"Mật khẩu",
                 "class":"w-full h-12 px-3 rounded-xl bg-gray-100 outline-none"
             }),
             "email": forms.EmailInput(attrs={
-                "placehoder":"Tên Đăng Nhập",
-                "class":"w-full h-12 px-3 rounded-xl bg-gray-100 outline-none text-red-500"
+                "placeholder":"Email",
+                "class":"w-full h-12 px-3 rounded-xl bg-gray-100 outline-none "
             }),
         }

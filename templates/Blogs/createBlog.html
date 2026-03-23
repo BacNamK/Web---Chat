@@ -14,7 +14,7 @@
         type="text"
         name="title"
         placeholder="Tiêu Đề"
-        maxlength="50"
+        maxlength="100"
         required
       />
       <div class="p-2">
@@ -25,11 +25,18 @@
     </div>
 
     <!-- Upload -->
-    <div class="mt-2">
-      <label class="cursor-pointer max-w-10 flex justify-center rounded-[5px] bg-gray-100 p-1">
-        <img class="size-5" src="{% static 'image/add1.png' %}" alt="">
+    <div class="mt-2 flex gap-4 items-center">
+      <label class="cursor-pointer w-8 h-8 flex justify-center items-center rounded-[5px] bg-gray-100 p-1">
+        <img class="size-4" src="{% static 'image/image.png' %}" alt="">
         <input type="file" name="image" class="input-image hidden" accept="image/*">
       </label>
+      <label class="cursor-pointer w-8 h-8 flex justify-center items-center rounded-[5px] bg-gray-100 p-1">
+        <img class="size-5" src="{% static 'image/video-camera.png' %}" alt="">
+        <input type="file" name="video" class="input-video hidden" accept="video/*">
+      </label>
+      <button type="button" class="btn-cancel text-sm px-3 h-8 rounded-[5px] bg-gray-200 hover:bg-gray-300">
+        Hủy
+      </button>
     </div>
 
     <!-- Preview -->
@@ -39,7 +46,10 @@
       <div class="absolute inset-0 bg-center bg-cover blur-2xl scale-110 shell hidden"></div>
 
       <!-- Image preview -->
-      <img class="relative z-10 max-h-full preview hidden" src="" alt="">
+      <img class="relative z-10 max-h-full preview-image hidden" src="" alt="">
+
+      <!-- Video preview -->
+      <video class="relative z-10 max-h-full preview-video hidden" controls></video>
 
       <span class="text opacity-50 no-image">Không có ảnh</span>
     </div>
@@ -47,7 +57,7 @@
     <div class="pt-5">
       <textarea
         class="w-full p-2 h-40 bg-gray-100 rounded-[5px] outline-none"
-        maxlength="1000"
+        maxlength="5000"
         name="content"
         placeholder="Nội Dung"
         required
@@ -58,34 +68,70 @@
 </div>
 
 <script>
-  const input = document.querySelector('.input-image');
-  const preview = document.querySelector('.preview');
+  const inputImage = document.querySelector('.input-image');
+  const inputVideo = document.querySelector('.input-video');
+  const previewImage = document.querySelector('.preview-image');
+  const previewVideo = document.querySelector('.preview-video');
   const shell = document.querySelector('.shell');
   const text = document.querySelector('.no-image');
+  const btnCancel = document.querySelector('.btn-cancel');
+  let currentUrl = null;
 
-  const removeImage = ()=>{
-    let value = null
-    if(value){
-      URL.revokeObjectURL(value)
+  const clearPreview = () => {
+    if (currentUrl) {
+      URL.revokeObjectURL(currentUrl);
+      currentUrl = null;
     }
-  }
+    previewImage.src = '';
+    previewVideo.src = '';
+    previewImage.classList.add('hidden');
+    previewVideo.classList.add('hidden');
+    shell.classList.add('hidden');
+    text.classList.remove('hidden');
+  };
 
-  input.addEventListener('change', (e) => {
+  const showImage = (file) => {
+    clearPreview();
+    currentUrl = URL.createObjectURL(file);
+    previewImage.src = currentUrl;
+    shell.style.backgroundImage = `url(${currentUrl})`;
+    previewImage.classList.remove('hidden');
+    shell.classList.remove('hidden');
+    text.classList.add('hidden');
+  };
+
+  const showVideo = (file) => {
+    clearPreview();
+    currentUrl = URL.createObjectURL(file);
+    previewVideo.src = currentUrl;
+    shell.classList.add('hidden');
+    previewVideo.classList.remove('hidden');
+    text.classList.add('hidden');
+  };
+
+  inputImage.addEventListener('change', (e) => {
     const file = e.target.files[0];
-
     if (file) {
-      const imageURL = URL.createObjectURL(file);
-
-      preview.src = imageURL;
-      shell.style.backgroundImage = `url(${imageURL})`;
-
-      preview.classList.remove('hidden');
-      shell.classList.remove('hidden');
-      text.classList.add('hidden');
+      inputVideo.value = '';
+      showImage(file);
     }
   });
 
-  document.querySelector('form').addEventListener("submit",()=>{
-    removeImage()
-  })
+  inputVideo.addEventListener('change', (e) => {
+    const file = e.target.files[0];
+    if (file) {
+      inputImage.value = '';
+      showVideo(file);
+    }
+  });
+
+  btnCancel.addEventListener('click', () => {
+    inputImage.value = '';
+    inputVideo.value = '';
+    clearPreview();
+  });
+
+  document.querySelector('form').addEventListener("submit", () => {
+    clearPreview();
+  });
 </script>

@@ -1,0 +1,101 @@
+{% load static %}
+<div class="custom-scrollbar overflow-y-auto p-2">
+    <div class="w-full h-auto select-none">
+        <div id="toogle" class="flex w-full p-2 gap-3 items-center justify-between rounded-xl shadow ">
+            <div class="pl-3 flex gap-3 items-center">
+                <img  src="{% static 'image/bell.png' %}" alt=""
+                class="size-5">
+                <p class="">Thông báo</p>
+                <span id="note" class="bg-red-600 size-2 rounded-full hidden"></span>
+            </div>
+            <img id="icon" src="{% static 'image/arrow.png' %}" alt=""
+            class="size-5">
+        </div>
+        <div id="box" class="flex flex-col-reverse mt-1 hidden justify-items-center max-h-[90vh] overflow-y-auto custom-scrollbar">
+            <div id="new-noti"></div>
+            {% for noti in notifications %}
+                <a href="{{ noti.url|default:'#' }}" class="w-full flex p-3 gap-2 items-center mt-1 h-15 hover:bg-gray-200">
+                    <img  src="{{noti.sender.avatar.url}}" alt=""
+                        class="size-10 rounded-full"  
+                    >
+                    <span>{{noti.content}}</span>
+                </a>
+                <hr class="w-[80%] opacity-10">
+            {% endfor %}
+        </div>
+    </div>
+
+    <!---->
+    <div class="overflow-y-auto custom-scrollbar w-full max-h-[80vh] mt-5 p-1">
+        {% for blog in blogStar %}
+            <a href="{% url 'blog:blog_detail' blog.uuid %}" class="block p-2 shadow rounded-xl hover:bg-gray-200 mt-2">
+                <div class="flex gap-2">
+                    <img class="size-5 rounded-full" src="{{blog.key_user.avatar.url}}" alt="">
+                    <span class="text-sm">{{blog.key_user.username}}</span>
+                </div>
+                <div class="font-bold text-black/70 mt-2">{{blog.title}}</div>
+            </a>
+        {% endfor %}
+    </div>
+</div>
+<script>
+
+    const note = document.getElementById("note")
+    const newNote = document.getElementById("new-noti")
+
+    // Websocket - Notification
+
+    const socket_notification = new WebSocket("ws://127.0.0.1:8000/ws/notification/");
+
+    const normalizeNotiUrl = (url)=>{
+        if (!url) return '#';
+        let href = url;
+        // If it's a blog detail link, drop the query entirely
+        if (href.includes('/blog/')) {
+            href = href.split('?')[0];
+        }
+        // Remove trailing slash for blog detail route (which has no slash)
+        if (href.endsWith('/') && href.includes('/blog/')) {
+            href = href.slice(0, -1);
+        }
+        return href;
+    }
+
+    socket_notification.onmessage = (e)=>{
+        const data = JSON.parse(e.data);
+        console.log(data)
+        if (data.type == 'notification'){
+            // Append a new notification item instead of replacing the container
+            newNote.insertAdjacentHTML("afterbegin", `
+            <a href="${normalizeNotiUrl(data.url)}" class="w-full flex p-3 gap-2 items-center mt-1 h-15 hover:bg-gray-200 bg-blue-100">
+                    <img  src="${data.avatar_sender || ''}" alt=""
+                        class="size-10 rounded-full"  
+                    >
+                    <span>${data.content || ''}</span>
+                </a>
+            `)
+            note.classList.remove("hidden")
+        }
+    }
+
+    //
+    const box = document.getElementById("box")
+    const icon = document.getElementById("icon")
+    document.getElementById("toogle").addEventListener('click',()=>{
+        note.classList.add("hidden")
+        if(box.classList.contains("hidden")){
+            box.classList.remove("hidden")
+            icon.classList.add("rotate-90")
+        }
+        else{
+            box.classList.add("hidden")
+            icon.classList.remove("rotate-90")
+        }
+    })
+
+    // Normalize old notification URLs rendered from DB
+    document.querySelectorAll('#box a[href]').forEach((a)=>{
+        const href = a.getAttribute('href') || '';
+        a.setAttribute('href', normalizeNotiUrl(href));
+    })
+</script>

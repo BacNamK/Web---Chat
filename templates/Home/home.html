@@ -3,8 +3,12 @@
 <div
   class="main w-full h-full justify-items-center overflow-y-auto custom-scrollbar"
 >
+<!-- Tìm kiếm user hoặc bài viết có liên qua -->
   <div class="w-full h-15 justify-items-center content-center">
-    <div class="w-[90%] h-10 bg-gray-50 shadow rounded-full"></div>
+    <div class="flex w-[90%] h-10 bg-gray-50 shadow rounded-full">
+      <div class="w-[10%] justify-items-center content-center"><img class="size-5" src="{% static 'image/search.png' %}" alt=""></div>
+      <input type="text" name="" id="search-input" placeholder="Tìm kiếm" class="w-full outline-none " autocomplete="off">
+    </div>
   </div>
   <div class="w-[90%]">
     {% for blog in blogs %}
@@ -34,7 +38,7 @@
                 <!---->
                 <div class="absolute form-delete right-10">
                 <img src="{% static 'image/option.png' %}" class="btn-show size-5 cursor-pointer" alt="">
-                <div class="box absolute hidden w-20 shadow p-1 rounded-[5px]">
+                <div class="box absolute hidden w-40 z-50 shadow p-1 rounded-[5px] bg-white ">
                     {% if blog.key_user.id == user.id or user.is_superuser %}
                     <form action="{% url 'blog:delete_blog_user' blog.uuid %}" method="post" class="hover:bg-gray-100">
                         {% csrf_token %}
@@ -45,6 +49,12 @@
                         {% csrf_token %}
                         <button type="submit" class="text-xs p-1 w-full flex justify-start rounded-[5px]" ><span>Báo Cáo</span></button>
                     </form>
+                    {% if user.is_superuser or user.is_staff %}
+                    <form action="{% url 'blog:star_blog' blog.uuid %}" class="hover:bg-gray-100">
+                      {% csrf_token %}
+                      <button type="submit" class="hover:text-green-500 text-xs p-1 w-full flex justify-start rounded-[5px]" ><span>Nổi bật</span></button>
+                    </form>
+                    {% endif %}
                 </div>
             </div>
               </div>
@@ -57,14 +67,21 @@
       
                 <!-- Image -->
                 {% if blog.image %}
-                <div class="relative mt-2 w-full flex justify-center rounded-md overflow-hidden shrink-0">
-                  <div class="absolute inset-0 bg-center bg-cover blur-2xl scale-110 "
-                      style="background-image: url('{{ blog.image.url }}');"></div>
-                  
-                  <img class="relative z-10 max-h-[500px] w-auto"
-                      src="{{ blog.image.url }}"
-                      alt="{{ blog.title }}">
-                </div>
+                  <div class="relative mt-2 w-full flex justify-center rounded-md overflow-hidden shrink-0">
+                    <div class="absolute inset-0 bg-center bg-cover blur-2xl scale-110 "
+                        style="background-image: url('{{ blog.image.url }}');"></div>
+                    
+                    <img class="relative z-10 max-h-[500px] w-auto"
+                        src="{{ blog.image.url }}"
+                        alt="{{ blog.title }}">
+                  </div>
+                {% endif %}
+                {% if blog.video %}
+                  <video
+                    class="mt-2 w-full max-h-[500px] object-cover rounded-xl"
+                    src="{{ blog.video.url }}"
+                    controls
+                  ></video>
                 {% endif %}
               </a>
     
@@ -104,6 +121,37 @@
     {% endfor %}
   </div>
 </div>
+
+<div
+  id="search-overlay"
+  class="fixed inset-0 z-50 hidden bg-black/20"
+  data-search-url="{% url 'home:search' %}"
+  data-user-url-template="{% url 'account:profile' 0 %}"
+  data-blog-url-template="{% url 'blog:blog_detail' '00000000-0000-0000-0000-000000000000' %}"
+  data-default-avatar="{% static 'image/user.png' %}"
+>
+  <div
+    id="search-panel"
+    class="absolute top-16 left-1/2 w-[92%] max-w-2xl -translate-x-1/2 rounded-xl bg-white shadow-lg"
+  >
+    <div class="flex items-center justify-between border-b px-4 py-3">
+      <p class="text-sm font-medium opacity-80">Kết quả tìm kiếm</p>
+      <button id="search-close" class="text-xs px-2 py-1 rounded bg-gray-100 hover:bg-gray-200">Đóng</button>
+    </div>
+    <div class="p-4 grid gap-4 max-h-[70vh] overflow-y-auto custom-scrollbar">
+      <div>
+        <p class="text-xs uppercase opacity-50 mb-2">Người dùng</p>
+        <div id="search-users" class="grid gap-2"></div>
+      </div>
+      <div>
+        <p class="text-xs uppercase opacity-50 mb-2">Bài viết</p>
+        <div id="search-blogs" class="grid gap-2"></div>
+      </div>
+      <p id="search-empty" class="text-sm opacity-60 hidden">Không có kết quả phù hợp.</p>
+    </div>
+  </div>
+</div>
+
 <script>
   const position = document.querySelectorAll('.position').forEach(item =>
   item.addEventListener('click',()=>{
@@ -184,6 +232,97 @@
         btnCount.innerText = data.count
       })
     })
+    })
+  })
+
+  document.addEventListener('DOMContentLoaded',()=>{
+    const input = document.getElementById('search-input')
+    const overlay = document.getElementById('search-overlay')
+    const panel = document.getElementById('search-panel')
+    const closeBtn = document.getElementById('search-close')
+    const usersBox = document.getElementById('search-users')
+    const blogsBox = document.getElementById('search-blogs')
+    const emptyState = document.getElementById('search-empty')
+
+    if(!input || !overlay) return
+
+    const searchUrl = overlay.dataset.searchUrl
+    const userUrlTemplate = overlay.dataset.userUrlTemplate
+    const blogUrlTemplate = overlay.dataset.blogUrlTemplate
+    const defaultAvatar = overlay.dataset.defaultAvatar
+
+    let debounceId = null
+    let requestIndex = 0
+
+    const openOverlay = () => overlay.classList.remove('hidden')
+    const closeOverlay = () => overlay.classList.add('hidden')
+
+    closeBtn.addEventListener('click', closeOverlay)
+    overlay.addEventListener('click', (e) => {
+      if (e.target === overlay) closeOverlay()
+    })
+
+    const renderUsers = (users) => {
+      usersBox.innerHTML = ''
+      users.forEach(user => {
+        const userUrl = userUrlTemplate.replace(/0$/, user.id)
+        const avatar = user.avatar || defaultAvatar
+        const html = `
+          <a href="${userUrl}" class="flex items-center gap-3 p-2 rounded-lg hover:bg-gray-50">
+            <img class="w-8 h-8 rounded-full object-cover" src="${avatar}" alt="${user.username}">
+            <span class="text-sm font-medium">${user.username}</span>
+          </a>
+        `
+        usersBox.insertAdjacentHTML('beforeend', html)
+      })
+    }
+
+    const renderBlogs = (blogs) => {
+      blogsBox.innerHTML = ''
+      blogs.forEach(item => {
+        const blogUrl = blogUrlTemplate.replace('00000000-0000-0000-0000-000000000000', item.uuid)
+        const snippet = item.content ? `${item.content}...` : ''
+        const html = `
+          <a href="${blogUrl}" class="block p-2 rounded-lg hover:bg-gray-50">
+            <p class="text-sm font-semibold">${item.title}</p>
+            <p class="text-xs opacity-60">Tác giả: ${item.user.username}</p>
+            ${snippet ? `<p class="text-xs opacity-70 mt-1">${snippet}</p>` : ''}
+          </a>
+        `
+        blogsBox.insertAdjacentHTML('beforeend', html)
+      })
+    }
+
+    const renderEmpty = (isEmpty) => {
+      emptyState.classList.toggle('hidden', !isEmpty)
+    }
+
+    const handleSearch = (query) => {
+      if (!query) {
+        closeOverlay()
+        usersBox.innerHTML = ''
+        blogsBox.innerHTML = ''
+        renderEmpty(false)
+        return
+      }
+      const current = ++requestIndex
+      openOverlay()
+      fetch(`${searchUrl}?q=${encodeURIComponent(query)}`)
+        .then(res => res.json())
+        .then(data => {
+          if (current !== requestIndex) return
+          renderUsers(data.users || [])
+          renderBlogs(data.blogs || [])
+          const isEmpty = (!data.users || data.users.length === 0) && (!data.blogs || data.blogs.length === 0)
+          renderEmpty(isEmpty)
+        })
+        .catch(() => {})
+    }
+
+    input.addEventListener('input', (e) => {
+      const value = e.target.value.trim()
+      if (debounceId) clearTimeout(debounceId)
+      debounceId = setTimeout(() => handleSearch(value), 300)
     })
   })
 </script>

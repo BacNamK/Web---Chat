@@ -6,10 +6,11 @@ from django.conf import settings
 class blog(models.Model):
     key_user = models.ForeignKey(settings.AUTH_USER_MODEL,on_delete = models.CASCADE,related_name='blog')
     uuid = models.UUIDField(default=uuid.uuid4,editable=False,unique=True)
+    star = models.BooleanField(default=False)
     title = models.CharField(max_length=150)
     content = models.TextField(blank=True,null=True)
     image = models.ImageField(upload_to='blog_image/',blank=True,null=True)
-    video = models.FileField(upload_to='blog_video/',blank=True,null=True)
+    video = models.FileField(upload_to='blog_video/', max_length=500, blank=True, null=True)
     like = models.ManyToManyField(settings.AUTH_USER_MODEL,related_name="like_blog",blank=True)
     create_at = models.DateTimeField(auto_now_add=True)
     verify = models.BooleanField(default=False)

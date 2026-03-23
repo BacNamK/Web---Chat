@@ -47,14 +47,21 @@
         <!-- Ảnh -->
         <div class="relative w-[90%] flex justify-center rounded-[5px] overflow-hidden shrink-0">
           {% if blogD.image %}
-          <div class="absolute inset-0 bg-center bg-cover blur-2xl scale-110"
-            style="background-image: url('{{ blogD.image.url }}');"></div>
-            <img
-              class="relative z-10 w-full max-h-[700px] object-cover"
-              src="{{ blogD.image.url }}"
-              alt=""
-            />
-          {% endif %}
+            <div class="absolute inset-0 bg-center bg-cover blur-2xl scale-110"
+                style="background-image: url('{{ blogD.image.url }}');"></div>
+                <img
+                class="relative z-10 w-full max-h-[700px] object-cover"
+                src="{{ blogD.image.url }}"
+                alt=""
+                />
+            {% endif %}
+            {% if blogD.video %}
+                <video
+                  class="relative z-10 w-full max-h-[700px] object-cover"
+                  src="{{ blogD.video.url }}"
+                  controls
+                ></video>
+            {% endif %}
         </div>
         <!-- Nội Dung -->
         {% if blogD.content %}

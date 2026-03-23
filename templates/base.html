@@ -14,9 +14,11 @@
       >
         {% include "Navbar/nabar.html"%}
       </div>
-      <div class="w-[60%]  max-xl:w-full h-full shadow">
+      <div class="w-[60%] max-xl:w-full h-full shadow min-w-0">
         {% if request.resolver_match.url_name == "home" %}
           {% include "Home/home.html" %}
+        {% elif request.resolver_match.url_name == "reports" %}
+          {% include "Home/reports.html" %} 
         {% elif request.resolver_match.url_name == "room" %}
           {% include "Chat/PageChat.html" %} 
         {% elif request.resolver_match.url_name == "create_blog" %}
@@ -29,7 +31,13 @@
           {% include "Account/profile.html" %}  
         {% endif %}
       </div>
-      <div class="w-[20%] h-full max-xl:hidden"></div>
+      <div class="w-[20%] h-full max-md:hidden">
+        {% if request.resolver_match.url_name == "room" %}
+          {% include "Chat/TableStatus.html" %}
+        {% elif request.resolver_match.url_name == "home" %}
+          {% include "Notification/notifi.html" %}
+        {% endif %}
+      </div>
     </div>
   </body>
 </html>

@@ -43,6 +43,9 @@
             alt=""
           />
         {% endif %}
+        {% if blog.video %}
+          <video class="w-full h-full rounded-xl" src="{{blog.video.url}}"></video>
+        {% endif %}
       </div>
     </div>
   </div>

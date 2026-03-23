@@ -15,5 +15,7 @@ urlpatterns = [
     path("approve_blog/<uuid:bloguuid>",views.approve_blog,name="approve_blog"),
     path("delete_blog_user/<uuid:bloguuid>",views.delete_blog_user,name="delete_blog_user"),
     path("delete_blog_censor/<uuid:bloguuid>",views.delete_blog_censor,name="delete_blog_censor"),
-    path("delete_comment/<int:id>",views.delete_comment,name="delete_comment")
+    path("delete_comment/<int:id>",views.delete_comment,name="delete_comment"),
+    path("report_comment/<int:id>",views.report_comment,name="report_comment"),
+    path("star_blog/<uuid:uuid>/", views.start_blog, name="star_blog")
 ]

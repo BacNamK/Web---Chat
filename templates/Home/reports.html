@@ -1,0 +1,83 @@
+{% load static %}
+{% load humanize %}
+<div class="w-full h-full justify-items-center overflow-y-auto pt-2 custom-scrollbar">
+
+  {% if report_items %}
+    {% for item in report_items %}
+      {% with report=item.report comment=item.comment %}
+        <div class="block w-[90%] p-3 mt-3 bg-gray-50 rounded-xl shadow-sm">
+          <div class="flex flex-wrap gap-6">
+            <div class="flex items-center gap-2">
+              {% if report.reporter.avatar %}
+                <img class="size-9 rounded-full" src="{{ report.reporter.avatar.url }}" alt="" />
+              {% else %}
+                <img class="size-9 rounded-full" src="{% static 'image/user.png' %}" alt="" />
+              {% endif %}
+              <div class="leading-tight">
+                <div class="text-sm">{{ report.reporter.username }}</div>
+              </div>
+            </div>
+            <img class="size-10" src="{% static 'image/arrow.png' %}" alt="">
+            <div class="flex items-center gap-2">
+              {% if report.target_user and report.target_user.avatar %}
+                <img class="size-9 rounded-full" src="{{ report.target_user.avatar.url }}" alt="" />
+              {% else %}
+                <img class="size-9 rounded-full" src="{% static 'image/user.png' %}" alt="" />
+              {% endif %}
+              <div class="leading-tight">
+                <div class="text-sm">
+                  {% if report.target_user %}
+                    {{ report.target_user.username }}
+                  {% else %}
+                    Không xác định
+                  {% endif %}
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="mt-3 text-sm">
+            <div class="text-xs opacity-60">{{ report.created_at|naturaltime }}</div>
+          </div>
+
+          <div class="mt-3 p-2 bg-white rounded-lg">
+            <div class="text-xs opacity-60">Bình luận bị report</div>
+            {% if comment %}
+              <div class="text-sm">{{ comment.content }}</div>
+              <div class="text-xs opacity-60 mt-1">Bài viết: {{ comment.key_blog.title }}</div>
+            {% else %}
+              <div class="text-sm text-red-500">Không tìm thấy bình luận (đã bị xóa?)</div>
+            {% endif %}
+          </div>
+
+          <div class="mt-3 flex gap-3">
+            <form method="post">
+              {% csrf_token %}
+              <input type="hidden" name="report_id" value="{{ report.id }}" />
+              <input type="hidden" name="action" value="delete_comment" />
+              <button
+                type="submit"
+                class="h-9 w-28 rounded-md bg-red-500 text-white hover:bg-red-600 shadow"
+              >
+                Xóa
+              </button>
+            </form>
+            <form method="post">
+              {% csrf_token %}
+              <input type="hidden" name="report_id" value="{{ report.id }}" />
+              <input type="hidden" name="action" value="dismiss" />
+              <button
+                type="submit"
+                class="h-9 w-24 rounded-md bg-gray-200 hover:bg-gray-300 shadow"
+              >
+                Hủy
+              </button>
+            </form>
+          </div>
+        </div>
+      {% endwith %}
+    {% endfor %}
+  {% else %}
+    <span class="opacity-30 block h-full content-center">Không có report nào</span>
+  {% endif %}
+</div>

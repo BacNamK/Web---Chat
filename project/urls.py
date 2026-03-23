@@ -22,7 +22,7 @@ urlpatterns = [
     path("",include("home.urls",namespace="home")),
     path("account/",include("account.urls",namespace="account")),
     path("blog/",include("blog.urls",namespace="blog")),
-    path("chat/",include("chat.urls",namespace="chat"))
+    path("chat/",include("chat.urls",namespace="chat")),
 ]
 
 if settings.DEBUG:

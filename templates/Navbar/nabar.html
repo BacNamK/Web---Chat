@@ -18,36 +18,30 @@
                     <img class="size-5 group-hover:rotate-90 duration-500 {% if current == 'chat_page' %} rotate-90{% endif %} " src="{% static 'image/arrow.png' %}" alt="">
                 </div>      
             </a>
-            {% if current == 'room' %}
-            <div class="w-full p-1 pl-10 m-2">
-                <a class="flex gap-3" href="">
-                    <img class="size-5 rounded-full shadow" src="{% static 'image/add1.png' %}" alt="">
-                    <span>Tạo nhóm</span>
-                </a>
+            <div class="flex w-full mt-4">
+                <span class="text-sm opacity-70 pl-5 font-medium">Đăng tải</span>
             </div>
-            {% endif %}
-            <div class="flex w-full h-10 hover:bg-gray-100 gap-3 p-1 rounded-xl items-center pl-5">
-                <img class="size-5" src="{% static 'image/bell.png' %}" alt="">
-                <div class="w-full flex justify-between items-center">
-                    <span>Thông Báo</span>
-                    <img class="size-5 " src="{% static 'image/arrow.png' %}" alt="">
-                </div>
-            </div>
-            {% if user.is_superuser or user.is_staff %}
-            <a href="{% url 'blog:censor_blog' %}"
-             class="flex w-full hover:bg-gray-100 gap-3 h-10 p-1 rounded-xl items-center pl-5 mt-1 opacity-70 {% if current == 'censor_blog' %}bg-gray-100 shadow{% endif %}">
-                <img class="size-5" src="{% static 'image/approve.png' %}" alt="">
-                <div class="w-full flex justify-between">Kiểm Duyệt <span class="pr-1.5">{{not_verify}}</span></div>
-            </a>
-            {% endif %}
-            {% if current == "home" %}
-            <div class="w-[90%] mt-2 justify-items-center opacity-70">
+            <div class="w-[90%] justify-items-center">
                 <a class="flex w-full h-10 items-center gap-3 p-1 pl-2 hover:bg-gray-100 rounded-xl"
                 href="{% url 'blog:create_blog' %}">
                     <img class="size-4" src="{% static 'image/more.png' %}" alt="">
                     <span>Tạo Bài Viết</span>
                 </a>
             </div>
+            {% if user.is_superuser or user.is_staff %}
+            <div class="flex w-full mt-4">
+                <span class="text-sm opacity-70 pl-5 font-medium">Quản trị</span>
+            </div>
+            <a href="{% url 'blog:censor_blog' %}"
+             class="flex w-full hover:bg-gray-100 gap-3 h-10 p-1 rounded-xl items-center pl-5 {% if current == 'censor_blog' %}bg-gray-100 shadow{% endif %}">
+                <img class="size-4.5" src="{% static 'image/security.png' %}" alt="">
+                <div class="w-full flex justify-between">Kiểm Duyệt <span class="pr-1.5">{{not_verify}}</span></div>
+            </a>
+            <a href="{% url 'homeapp:reports' %}"
+             class="flex w-full hover:bg-gray-100 gap-3 h-10 p-1 rounded-xl items-center pl-4.5 {% if current == 'reports' %}bg-gray-100 shadow{% endif %}">
+                <img class="size-6" src="{% static 'image/report.png' %}" alt="">
+                <div class="w-full flex justify-between">Báo cáo  <span class="pr-1.5">{{report_count}}</span></div>
+            </a>
             {% endif %}
         {% endwith %}
     </div>
@@ -55,16 +49,22 @@
     <div class=" absolute bottom-0 w-full flex p-1 justify-between items-center">
         {% if user.is_authenticated %}
         <div class="w-full h-13 items-center p-2 flex rounded-[5px] shadow">
-            <div class="w-full content-center flex gap-2">
-                <div class=" size-9 rounded-full shadow">
+            <div class="w-full content-center flex gap-x-2">
+                <div class="relative w-10 h-10">
                     {% if user.avatar %}
                     <img class="size-full rounded-full" src="{{user.avatar.url}}" alt="">
                     {% endif %}
+                    <div class="absolute bottom-0 right-0 justify-items-center content-center size-4 rounded-full bg-white">
+                        <div id="icon-status"></div>
+                    </div>
                 </div>
-                <div>{{user.username}}</div>
+                <div class="grid gap-y-0">
+                    <span class="w-full block p-0 m-0 font-bold ">{{user.username}}</span>
+                    <span id="status" class="w-full text-[12px] font-bold text-black/70 " ></span>
+                </div>
             </div>
             <div  class="btn size-10 content-center justify-items-center hover:bg-gray-300 rounded-[5px]">
-                <img class="size-7 hover:rotate-45 duration-500" src="{% static 'image/setting.svg' %}" alt="">
+                <img class="size-6 hover:rotate-45 duration-500" src="{% static 'image/setting.svg' %}" alt="">
             </div>
         </div>
         {% else %}
@@ -117,7 +117,10 @@
     <!--User-->
     <div class="absolute bottom-0 w-full flex p-1 justify-between items-center">
         <div class="w-full h-13 items-center flex justify-center">
+            {%if user.avatar %}
                 <img class="size-9 rounded-full" src="{{user.avatar.url}}" alt="">
+            {% endif %}
+
         </div>
     </div>
 </div>
@@ -145,5 +148,26 @@
         })
     });
 
-    
+    // Websocket - Presence
+
+    const socket_presence = new WebSocket("ws://127.0.0.1:8000/ws/presence/");
+
+    socket_presence.onmessage = (e)=>{
+        const data = JSON.parse(e.data);
+
+        if (data.type == 'ping'){
+            socket_presence.send(JSON.stringify({
+                'type':'pong'
+            }))
+        }
+        if (data.status === true){
+            document.getElementById(`status`).innerHTML = "Trực tuyến";
+            document.getElementById(`icon-status`).classList.add("bg-green-600","rounded-full","size-2.5");
+        }
+        else{
+            document.getElementById(`status`).innerHTML = "Ngoại tuyến";
+            document.getElementById(`icon-status`).classList.add("bg-gray-500","rounded-full","size-2.5");
+        }
+    }
+
 </script>

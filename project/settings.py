@@ -48,6 +48,8 @@ INSTALLED_APPS = [
     "tailwind",
     "theme",
     'django.contrib.humanize',
+    'notification',
+    'presence',
 ]
 
 TAILWIND_APP_NAME = "theme"
@@ -75,10 +77,12 @@ ASGI_APPLICATION = "project.asgi.application"
 
 CHANNEL_LAYERS = {
     "default": {
-        "BACKEND": "channels.layers.InMemoryChannelLayer",
+        "BACKEND": "channels_redis.core.RedisChannelLayer",
+        "CONFIG": {
+            "hosts": [("127.0.0.1", 6379)],
+        },
     },
 }
-
 TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
@@ -89,6 +93,7 @@ TEMPLATES = [
                 'django.template.context_processors.request',
                 'django.contrib.auth.context_processors.auth',
                 'django.contrib.messages.context_processors.messages',
+                'home.context_processors.admin_badges',
             ],
         },
     },
