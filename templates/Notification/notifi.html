@@ -11,17 +11,19 @@
             <img id="icon" src="{% static 'image/arrow.png' %}" alt=""
             class="size-5">
         </div>
-        <div id="box" class="flex flex-col-reverse mt-1 hidden justify-items-center max-h-[90vh] overflow-y-auto custom-scrollbar">
+        <div id="box" class="hidden justify-items-center max-h-[90vh] overflow-y-auto custom-scrollbar">
             <div id="new-noti"></div>
-            {% for noti in notifications %}
-                <a href="{{ noti.url|default:'#' }}" class="w-full flex p-3 gap-2 items-center mt-1 h-15 hover:bg-gray-200">
-                    <img  src="{{noti.sender.avatar.url}}" alt=""
-                        class="size-10 rounded-full"  
-                    >
-                    <span>{{noti.content}}</span>
-                </a>
-                <hr class="w-[80%] opacity-10">
-            {% endfor %}
+            <div class="flex flex-col">
+                {% for noti in notifications %}
+                    <a href="{{ noti.url|default:'#' }}" class="w-full flex p-3 gap-2 items-center mt-1 h-15 hover:bg-gray-200">
+                        <img  src="{{noti.sender.avatar.url}}" alt=""
+                            class="size-10 rounded-full"  
+                        >
+                        <span>{{noti.content}}</span>
+                    </a>
+                    <hr class="w-[80%] opacity-10">
+                {% endfor %}
+            </div>
         </div>
     </div>
 

@@ -20,7 +20,17 @@ def home_Page(request):
 
     blogstar = blog.objects.filter(star = True).order_by("-verify_at")
 
-    context ={"blogs":blogs,"not_verify":not_verify,"notifications":notifications,"blogStar":blogstar}
+    liked_blog_ids = set(
+        blogs.filter(like=request.user).values_list("id", flat=True)
+    )
+
+    context ={
+        "blogs":blogs,
+        "not_verify":not_verify,
+        "notifications":notifications,
+        "blogStar":blogstar,
+        "liked_blog_ids": liked_blog_ids,
+    }
     
     return render(request,'base.html',context)
 
